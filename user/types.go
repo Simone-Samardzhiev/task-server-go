@@ -11,8 +11,8 @@ type User struct {
 	Password string
 }
 
-// NewUser is a struct used to decode user information from requests.
-type NewUser struct {
+// JsonUser is a struct used to decode user information from requests.
+type JsonUser struct {
 	// The email of the user.
 	Email string `json:"email"`
 	// The password of the user.
