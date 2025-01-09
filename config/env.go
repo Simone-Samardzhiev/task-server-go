@@ -11,7 +11,7 @@ type Config struct {
 	// The database password.
 	DBPass string
 	// The database address.
-	DBAddress string
+	DBHost string
 	// The database name.
 	DBName string
 }
@@ -27,11 +27,11 @@ func initConfig() Config {
 	}
 
 	return Config{
-		Port:      getEnv("PORT", "8080"),
-		DBUser:    getEnv("DB_USER", "postgres"),
-		DBPass:    getEnv("DB_PASS", "postgres"),
-		DBAddress: getEnv("DB_ADDRESS", "localhost"),
-		DBName:    getEnv("DB_NAME", "postgres"),
+		Port:   getEnv("PORT", "8080"),
+		DBUser: getEnv("DB_USER", "postgres"),
+		DBPass: getEnv("DB_PASS", "postgres"),
+		DBHost: getEnv("DB_HOST", "localhost"),
+		DBName: getEnv("DB_NAME", "postgres"),
 	}
 }
 
