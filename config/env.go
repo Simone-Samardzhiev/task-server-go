@@ -14,6 +14,8 @@ type Config struct {
 	DBHost string
 	// The database name.
 	DBName string
+	// Secret used to sign tokens.
+	JWTSecret string
 }
 
 // Envs is a variable holding the loaded configuration.
@@ -27,11 +29,12 @@ func initConfig() Config {
 	}
 
 	return Config{
-		Port:   getEnv("PORT", "8080"),
-		DBUser: getEnv("DB_USER", "postgres"),
-		DBPass: getEnv("DB_PASS", "postgres"),
-		DBHost: getEnv("DB_HOST", "localhost"),
-		DBName: getEnv("DB_NAME", "postgres"),
+		Port:      getEnv("PORT", "8080"),
+		DBUser:    getEnv("DB_USER", "postgres"),
+		DBPass:    getEnv("DB_PASS", "postgres"),
+		DBHost:    getEnv("DB_HOST", "localhost"),
+		DBName:    getEnv("DB_NAME", "postgres"),
+		JWTSecret: getEnv("JWT_SECRET", "secret"),
 	}
 }
 
