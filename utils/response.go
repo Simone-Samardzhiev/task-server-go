@@ -15,4 +15,9 @@ var (
 		StatusCode: http.StatusInternalServerError,
 		Data:       "Internal Server Error",
 	}
+
+	UnauthorizedResponse = Response[string]{
+		StatusCode: http.StatusUnauthorized,
+		Data:       "Unauthorized",
+	}
 )
