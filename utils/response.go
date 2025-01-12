@@ -1,23 +1,23 @@
 package utils
 
-import "net/http"
-
-// Response is a struct used to respond to a http request.
+// Response type struct holds Ok only if Err is nil.
 type Response[T any] struct {
-	// The status code of the response.
-	StatusCode int
-	// The data of the response.
-	Data T
+	Ok  SuccessResponse[T]
+	Err ErrorResponse
 }
 
-var (
-	InternalServerErrorResponse = Response[string]{
-		StatusCode: http.StatusInternalServerError,
-		Data:       "Internal Server Error",
+// NewResponseWithErr return Response where Ok is default value.
+func NewResponseWithErr[T any](err *ErrorResponse) Response[T] {
+	return Response[T]{
+		Ok:  SuccessResponse[T]{},
+		Err: *err,
 	}
+}
 
-	UnauthorizedResponse = Response[string]{
-		StatusCode: http.StatusUnauthorized,
-		Data:       "Unauthorized",
+// NewResponseWithOk return Response where Err is nil.
+func NewResponseWithOk[T any](ok *SuccessResponse[T]) Response[T] {
+	return Response[T]{
+		Ok:  *ok,
+		Err: nil,
 	}
-)
+}
