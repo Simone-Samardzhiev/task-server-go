@@ -3,6 +3,7 @@ package user
 import (
 	"database/sql"
 	"github.com/google/uuid"
+	"server/auth"
 )
 
 // Repository is interface that will manage user data.
@@ -18,6 +19,12 @@ type Repository interface {
 
 	// DeleteUser will delete user by its id.
 	DeleteUser(id uuid.UUID) error
+
+	// AddToken will add a new token.
+	AddToken(token auth.RefreshTokenClaims) error
+
+	// DeleteToken will delete a token and return true if the token was deleted.
+	DeleteToken(token auth.RefreshTokenClaims) (bool, error)
 }
 
 type PostgresRepository struct {
@@ -51,4 +58,18 @@ func (p *PostgresRepository) GetUserByEmail(email string) (User, error) {
 func (p *PostgresRepository) DeleteUser(id uuid.UUID) error {
 	_, err := p.database.Exec("DELETE FROM users WHERE id = ?", id)
 	return err
+}
+
+func (p *PostgresRepository) AddToken(token auth.RefreshTokenClaims) error {
+	_, err := p.database.Exec("INSERT INTO tokens(id, expire_date) VALUES (?, ?)", token.ID, token.ExpiresAt)
+	return err
+}
+
+func (p *PostgresRepository) DeleteToken(token auth.RefreshTokenClaims) (bool, error) {
+	result, err := p.database.Exec("DELETE FROM tokens WHERE id = ?", token.ID)
+	if err != nil {
+		return false, err
+	}
+	count, err := result.RowsAffected()
+	return count > 0, err
 }
