@@ -1,7 +1,5 @@
 package utils
 
-import "net/http"
-
 // ErrorResponse type interface is a conventional way to represent
 // error response.
 type ErrorResponse interface {
@@ -27,10 +25,3 @@ func (e *errorResponse) StatusCode() int {
 func NewErrorResponse(message string, status int) ErrorResponse {
 	return &errorResponse{message, status}
 }
-
-var (
-	InternalServerErrorResponse = NewErrorResponse(
-		"InternalServerError",
-		http.StatusInternalServerError,
-	)
-)

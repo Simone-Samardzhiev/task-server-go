@@ -1,13 +1,12 @@
 package auth
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"testing"
 )
 
 func TestHashPassword(t *testing.T) {
 	password := "password"
-	hash, err := HashPassword(password)
+	hash, err := HashPassword(&password)
 	if err != nil {
 		t.Error(err)
 	}
@@ -23,13 +22,12 @@ func TestHashPassword(t *testing.T) {
 
 func TestCheckPasswordHash(t *testing.T) {
 	password := "password"
-	hash, err := HashPassword(password)
+	hash, err := HashPassword(&password)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	if err != nil {
-		t.Error(err)
+	if !CheckPassword(&password, &hash) {
+		t.Error("hash is different")
 	}
 }

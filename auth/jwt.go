@@ -28,6 +28,7 @@ func NewRefreshTokenClaims(id, sub uuid.UUID) RefreshTokenClaims {
 	}
 }
 
+// newRefreshTokenClaimsFromToken used to parse the token and return the claims or an error.
 func newRefreshTokenClaimsFromToken(tokenString string) (RefreshTokenClaims, error) {
 	var claims RefreshTokenClaims
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
@@ -64,6 +65,7 @@ func NewAccessTokenClaims(sub uuid.UUID) AccessTokenClaims {
 	}
 }
 
+// newAccessTokenClaimsFromToken used to parse the token and return the claims or an error.
 func newAccessTokenClaimsFromToken(tokenString string) (AccessTokenClaims, error) {
 	var claims AccessTokenClaims
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
