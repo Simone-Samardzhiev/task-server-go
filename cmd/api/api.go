@@ -2,8 +2,9 @@ package api
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
+	"server/auth"
+	"server/user"
 )
 
 // Server is a struct used to create a new server instance
@@ -25,7 +26,14 @@ func NewServer(address string, db *sql.DB) *Server {
 
 // Start will make the server lister to the port.
 func (s *Server) Start() error {
-	log.Println("Starting API server...")
+	userRepository := user.NewPostgresRepository(s.db)
+	userService := user.NewDefaultService(userRepository)
+	userHandler := user.NewDefaultHandler(userService)
+
 	mux := http.NewServeMux()
+	mux.Handle("POST /users/register", userHandler.Register())
+	mux.Handle("POST /users/login", userHandler.Login())
+	mux.Handle("GET /user/refresh", auth.JWTMiddleware(userHandler.Refresh()))
+
 	return http.ListenAndServe(s.port, mux)
 }
