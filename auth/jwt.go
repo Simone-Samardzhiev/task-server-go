@@ -18,7 +18,7 @@ type RefreshTokenClaims struct {
 }
 
 // NewRefreshTokenClaims used to create a new token with specified id and subject.
-func NewRefreshTokenClaims(id, sub uuid.UUID) RefreshTokenClaims {
+func NewRefreshTokenClaims(id, sub *uuid.UUID) RefreshTokenClaims {
 	return RefreshTokenClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        id.String(),
@@ -29,9 +29,9 @@ func NewRefreshTokenClaims(id, sub uuid.UUID) RefreshTokenClaims {
 }
 
 // newRefreshTokenClaimsFromToken used to parse the token and return the claims or an error.
-func newRefreshTokenClaimsFromToken(tokenString string) (RefreshTokenClaims, error) {
+func newRefreshTokenClaimsFromToken(tokenString *string) (RefreshTokenClaims, error) {
 	var claims RefreshTokenClaims
-	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(*tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
@@ -56,7 +56,7 @@ type AccessTokenClaims struct {
 }
 
 // NewAccessTokenClaims used to create a new token with subject.
-func NewAccessTokenClaims(sub uuid.UUID) AccessTokenClaims {
+func NewAccessTokenClaims(sub *uuid.UUID) AccessTokenClaims {
 	return AccessTokenClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   sub.String(),
@@ -66,9 +66,9 @@ func NewAccessTokenClaims(sub uuid.UUID) AccessTokenClaims {
 }
 
 // newAccessTokenClaimsFromToken used to parse the token and return the claims or an error.
-func newAccessTokenClaimsFromToken(tokenString string) (AccessTokenClaims, error) {
+func newAccessTokenClaimsFromToken(tokenString *string) (AccessTokenClaims, error) {
 	var claims AccessTokenClaims
-	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(*tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
@@ -102,7 +102,7 @@ const AccessTokenClaimsKey ContextKey = "atc"
 func RefreshTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-		claims, err := newRefreshTokenClaimsFromToken(header)
+		claims, err := newRefreshTokenClaimsFromToken(&header)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
@@ -117,7 +117,7 @@ func RefreshTokenMiddleware(next http.Handler) http.Handler {
 func AccessTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-		claims, err := newAccessTokenClaimsFromToken(header)
+		claims, err := newAccessTokenClaimsFromToken(&header)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		}

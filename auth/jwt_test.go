@@ -8,7 +8,8 @@ import (
 )
 
 func TestEncode(t *testing.T) {
-	refreshClaims := NewRefreshTokenClaims(uuid.New(), uuid.New())
+	id, sub := uuid.New(), uuid.New()
+	refreshClaims := NewRefreshTokenClaims(&id, &sub)
 
 	// Check if Encode function works for RefreshTokenClaims.
 	_, err := Encode(refreshClaims)
@@ -17,7 +18,8 @@ func TestEncode(t *testing.T) {
 	}
 
 	// Check if Encode function works for AccessTokenClaims.
-	accessClaims := NewAccessTokenClaims(uuid.New())
+	id = uuid.New()
+	accessClaims := NewAccessTokenClaims(&id)
 	_, err = Encode(accessClaims)
 	if err != nil {
 		t.Error(err)
@@ -25,7 +27,8 @@ func TestEncode(t *testing.T) {
 }
 
 func TestRefreshTokenMiddleware(t *testing.T) {
-	refreshClaims := NewRefreshTokenClaims(uuid.New(), uuid.New())
+	id, sub := uuid.New(), uuid.New()
+	refreshClaims := NewRefreshTokenClaims(&id, &sub)
 	token, err := Encode(refreshClaims)
 	if err != nil {
 		t.Error(err)
@@ -57,8 +60,9 @@ func TestRefreshTokenMiddleware(t *testing.T) {
 }
 
 func TestAccessTokenMiddleware(t *testing.T) {
-	accessClaims := NewAccessTokenClaims(uuid.New())
-	token, err := Encode(accessClaims)
+	id := uuid.New()
+	accessClaims := NewAccessTokenClaims(&id)
+	token, err := Encode(&accessClaims)
 	if err != nil {
 		t.Error(err)
 	}
