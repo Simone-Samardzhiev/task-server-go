@@ -37,7 +37,7 @@ func NewPostgresRepository(database *sql.DB) *PostgresRepository {
 }
 
 func (p *PostgresRepository) CheckUserEmail(email string) (bool, error) {
-	row := p.database.QueryRow("SELECT COUNT(id) FROM users WHERE email = ?", email)
+	row := p.database.QueryRow("SELECT COUNT(id) FROM users WHERE email = $1", email)
 	var count int
 
 	err := row.Scan(&count)
@@ -49,29 +49,29 @@ func (p *PostgresRepository) CheckUserEmail(email string) (bool, error) {
 }
 
 func (p *PostgresRepository) AddUser(user *User) error {
-	_, err := p.database.Exec("INSERT INTO users (id, email, password) VALUES (?, ?, ?)", user.Id, user.Email, user.Password)
+	_, err := p.database.Exec("INSERT INTO users (id, email, password) VALUES ($1, $2, $3)", user.Id, user.Email, user.Password)
 	return err
 }
 
 func (p *PostgresRepository) GetUserByEmail(email string) (*User, error) {
-	row := p.database.QueryRow("SELECT * FROM users WHERE email = ?", email)
+	row := p.database.QueryRow("SELECT * FROM users WHERE email = $1", email)
 	var user User
 	err := row.Scan(&user.Id, &user.Email, &user.Password)
 	return &user, err
 }
 
 func (p *PostgresRepository) DeleteUser(id *uuid.UUID) error {
-	_, err := p.database.Exec("DELETE FROM users WHERE id = ?", *id)
+	_, err := p.database.Exec("DELETE FROM users WHERE id = $1", *id)
 	return err
 }
 
 func (p *PostgresRepository) AddToken(token *auth.CustomClaims) error {
-	_, err := p.database.Exec("INSERT INTO tokens(id, expire_date) VALUES (?, ?)", token.ID, token.ExpiresAt)
+	_, err := p.database.Exec("INSERT INTO tokens(id, expire_date) VALUES ($1, $2)", token.ID, token.ExpiresAt)
 	return err
 }
 
 func (p *PostgresRepository) DeleteToken(token *auth.CustomClaims) (bool, error) {
-	result, err := p.database.Exec("DELETE FROM tokens WHERE id = ?", token.ID)
+	result, err := p.database.Exec("DELETE FROM tokens WHERE id = $1", token.ID)
 	if err != nil {
 		return false, err
 	}
