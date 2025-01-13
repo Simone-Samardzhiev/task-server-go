@@ -5,7 +5,6 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"server/auth"
-	"time"
 )
 
 // Repository is interface that will manage user data.
@@ -23,7 +22,7 @@ type Repository interface {
 	DeleteUser(id *uuid.UUID) error
 
 	// AddToken will add a new token.
-	AddToken(id *uuid.UUID, exp time.Time) error
+	AddToken(token *auth.CustomClaims) error
 
 	// DeleteToken will delete a token and return true if the token was deleted.
 	DeleteToken(token *auth.CustomClaims) (bool, error)
@@ -31,6 +30,10 @@ type Repository interface {
 
 type PostgresRepository struct {
 	database *sql.DB
+}
+
+func NewPostgresRepository(database *sql.DB) *PostgresRepository {
+	return &PostgresRepository{database: database}
 }
 
 func (p *PostgresRepository) CheckUserEmail(email string) (bool, error) {

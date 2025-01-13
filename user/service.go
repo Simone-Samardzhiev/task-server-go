@@ -23,6 +23,10 @@ type DefaultService struct {
 	repository Repository
 }
 
+func NewDefaultService(repository Repository) *DefaultService {
+	return &DefaultService{repository: repository}
+}
+
 func (d *DefaultService) Register(user *JsonUser) error {
 	// Fetch data if the user email is in use.
 	inUse, err := d.repository.CheckUserEmail(user.Email)

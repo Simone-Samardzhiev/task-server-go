@@ -20,6 +20,10 @@ type DefaultHandler struct {
 	service Service
 }
 
+func NewDefaultHandler(service Service) *DefaultHandler {
+	return &DefaultHandler{service: service}
+}
+
 func (d *DefaultHandler) GetJsonUserFromBody(r *http.Request) (*JsonUser, error) {
 	decoder := json.NewDecoder(r.Body)
 	var user JsonUser
