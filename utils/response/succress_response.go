@@ -1,4 +1,4 @@
-package utils
+package response
 
 // SuccessResponse type struct represent successful response with data and status code.
 type SuccessResponse[T any] struct {
@@ -7,6 +7,6 @@ type SuccessResponse[T any] struct {
 }
 
 // NewSuccessResponse returns new SuccessResponse with data and status code.
-func NewSuccessResponse[T any](data T, statusCode int) SuccessResponse[T] {
-	return SuccessResponse[T]{data, statusCode}
+func NewSuccessResponse[T any](data T, statusCode int) *SuccessResponse[T] {
+	return &SuccessResponse[T]{data, statusCode}
 }

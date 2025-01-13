@@ -1,4 +1,4 @@
-package utils
+package response
 
 // ErrorResponse type interface is a conventional way to represent
 // error response.
