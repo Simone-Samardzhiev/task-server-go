@@ -19,6 +19,12 @@ const (
 	// InternalServerErrorMessage should be sent when there is an [InternalServerErr]
 	InternalServerErrorMessage = "Internal Server Error"
 
-	// UnauthorizedMessage should be sent when there is an [UnauthorizedErr]
-	UnauthorizedMessage = "Unauthorized"
+	// UnauthorizedErrorMessage should be sent when there is an [UnauthorizedErr]
+	UnauthorizedErrorMessage = "Unauthorized"
+
+	// ConflictErrorMessage should be sent where there was an [ConflictErr]
+	ConflictErrorMessage = "Conflict"
+
+	// BadRequestErrorMessage when http body couldn't be parsed.
+	BadRequestErrorMessage = "Bad Request"
 )
