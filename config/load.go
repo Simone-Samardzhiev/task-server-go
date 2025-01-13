@@ -24,10 +24,11 @@ func LoadEnv() error {
 			return nil
 		}
 
-		currentDir = filepath.Dir(currentDir)
 		if fileExists(filepath.Join(currentDir, "go.mod")) {
 			break
 		}
+
+		currentDir = filepath.Dir(currentDir)
 	}
 
 	return fmt.Errorf(".env file not found")
