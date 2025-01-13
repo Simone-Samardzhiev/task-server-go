@@ -22,6 +22,6 @@ func (e *errorResponse) StatusCode() int {
 }
 
 // NewErrorResponse will return an ErrorResponse with error message and status code.
-func NewErrorResponse(message string, status int) ErrorResponse {
-	return &errorResponse{message, status}
+func NewErrorResponse(message *string, status *int) ErrorResponse {
+	return &errorResponse{*message, *status}
 }
