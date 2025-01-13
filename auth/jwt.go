@@ -2,133 +2,141 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"net/http"
 	"server/config"
+	"server/utils"
 	"strings"
 	"time"
 )
 
-// RefreshTokenClaims used to create refresh token.
-type RefreshTokenClaims struct {
+// TokenType is used to set the type of token.
+type TokenType int
+
+const (
+	// RefreshToken is type of token used to refresh access.
+	RefreshToken TokenType = 1
+	// AccessToken is type of token used to access information.
+	AccessToken TokenType = 2
+)
+
+// CustomClaims type struct is used to create the jwt claims.
+type CustomClaims struct {
+	Type TokenType `json:"type"`
 	jwt.RegisteredClaims
 }
 
-// NewRefreshTokenClaims used to create a new token with specified id and subject.
-func NewRefreshTokenClaims(id, sub *uuid.UUID) RefreshTokenClaims {
-	return RefreshTokenClaims{
+// TokenGroup type claims used to hold the access token and refresh token.
+type TokenGroup struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+// JWTService type struct used to create a service that will manage jwt.
+type JWTService struct {
+	secret []byte
+}
+
+// GenerateTokenGroup will return [TokenGroup] setting the tokens id and subject.
+func (s *JWTService) GenerateTokenGroup(id, sub *uuid.UUID) (*TokenGroup, error) {
+	// Creating the refresh token.
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, CustomClaims{
+		Type: RefreshToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        id.String(),
 			Subject:   sub.String(),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 14)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 30)),
 		},
-	}
-}
-
-// newRefreshTokenClaimsFromToken used to parse the token and return the claims or an error.
-func newRefreshTokenClaimsFromToken(tokenString *string) (RefreshTokenClaims, error) {
-	var claims RefreshTokenClaims
-	token, err := jwt.ParseWithClaims(*tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method")
-		}
-
-		return []byte(config.Envs.JWTSecret), nil
 	})
 
+	// Hashing the refresh token.
+	refreshTokenString, err := refreshToken.SignedString(s.secret)
 	if err != nil {
-		return RefreshTokenClaims{}, err
+		return nil, err
 	}
 
-	if !token.Valid {
-		return RefreshTokenClaims{}, errors.New("invalid token")
-	}
-
-	return claims, nil
-}
-
-// AccessTokenClaims used to create access token.
-type AccessTokenClaims struct {
-	jwt.RegisteredClaims
-}
-
-// NewAccessTokenClaims used to create a new token with subject.
-func NewAccessTokenClaims(sub *uuid.UUID) AccessTokenClaims {
-	return AccessTokenClaims{
+	//Creating the access token.
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, CustomClaims{
+		Type: AccessToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   sub.String(),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 10)),
 		},
+	})
+
+	// Hashing the access token.
+	accessTokenString, err := accessToken.SignedString(s.secret)
+	if err != nil {
+		return nil, err
 	}
+
+	return &TokenGroup{
+		AccessToken:  accessTokenString,
+		RefreshToken: refreshTokenString,
+	}, nil
+
 }
 
-// newAccessTokenClaimsFromToken used to parse the token and return the claims or an error.
-func newAccessTokenClaimsFromToken(tokenString *string) (AccessTokenClaims, error) {
-	var claims AccessTokenClaims
-	token, err := jwt.ParseWithClaims(*tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+// ParseToken will parse a string into [CustomClaims].
+func (s *JWTService) ParseToken(tokenString string) (*CustomClaims, error) {
+	// Parse the token.
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		// Check the hash method.
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method")
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(config.Envs.JWTSecret), nil
+
+		return s.secret, nil
 	})
 
 	if err != nil {
-		return AccessTokenClaims{}, err
-	}
-	if !token.Valid {
-		return AccessTokenClaims{}, errors.New("invalid token")
+		return nil, utils.UnauthorizedErr
 	}
 
-	return claims, nil
+	// Getting the claims.
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, utils.UnauthorizedErr
 }
 
-// ContextKey is a type used to declare keys for middleware.
-type ContextKey string
+// DefaultJWTService is [JWTService] used by the app.
+var DefaultJWTService = newJWTService(config.Envs.JWTSecret)
 
-// RefreshTokenClaimsKey is a key used to get refresh claims.
-// They will only be sent if the handler is wrapped in the middleware.
-// If the token is not valid the middleware will automatically return.
-const RefreshTokenClaimsKey ContextKey = "rtc"
+// newJWTService will create a new service setting the secret.
+func newJWTService(secret string) *JWTService {
+	return &JWTService{secret: []byte(secret)}
+}
 
-// AccessTokenClaimsKey is a key used to get refresh claims.
-// They will only be sent if the handler is wrapped in the middleware.
-// If the token is not valid the middleware will automatically return.
-const AccessTokenClaimsKey ContextKey = "atc"
+// Key is the type used to create context key.
+type Key string
 
-// RefreshTokenMiddleware will wrap a handler in middleware that will check for valid refresh token.
-func RefreshTokenMiddleware(next http.Handler) http.Handler {
+// TokenKey is the key that is used to retrieve token from context.
+const TokenKey Key = "token"
+
+// JWTMiddleware used to wrap handlers if they need to be access by token.
+func JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		header := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-		claims, err := newRefreshTokenClaimsFromToken(&header)
-		if err != nil {
+		// Getting the header.
+		header := r.Header.Get("Authorization")
+		if header == "" {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
 		}
+		tokenString := strings.TrimPrefix(header, "Bearer ")
 
-		ctx := context.WithValue(r.Context(), RefreshTokenClaimsKey, claims)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
+		// Parsing the token.
+		token, err := DefaultJWTService.ParseToken(tokenString)
 
-// AccessTokenMiddleware will wrap a handler in middleware that will check for valid access token.
-func AccessTokenMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		header := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-		claims, err := newAccessTokenClaimsFromToken(&header)
+		// Any error means the token is invalid.
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		}
 
-		ctx := context.WithValue(r.Context(), AccessTokenClaimsKey, claims)
+		// Putting the token in a context so the next handler can access it.
+		ctx := context.WithValue(r.Context(), TokenKey, token)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-// Encode will sign tokens.
-func Encode(claim jwt.Claims) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	return token.SignedString([]byte(config.Envs.JWTSecret))
 }

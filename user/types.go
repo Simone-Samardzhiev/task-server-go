@@ -18,9 +18,3 @@ type JsonUser struct {
 	// The password of the user.
 	Password string `json:"password"`
 }
-
-// TokenGroup is a struct holding both token so they can be sent over http request.
-type TokenGroup struct {
-	RefreshToken string `json:"refresh_token"`
-	AccessToken  string `json:"access_token"`
-}
