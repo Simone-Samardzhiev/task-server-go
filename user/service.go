@@ -86,7 +86,17 @@ func (d *DefaultService) Login(user *JsonUser) (*auth.TokenGroup, error) {
 		return nil, utils.InternalServerErr
 	}
 
-	err = d.repository.AddToken(&fetchedUser.Id, &exp)
+	// Delete any token the user might have, because only one should be valid.
+	err = d.repository.DeleteTokenByUserId(&fetchedUser.Id)
+	if err != nil {
+		return nil, utils.InternalServerErr
+	}
+
+	// Add the new token.
+	err = d.repository.AddToken(&tokenId, &fetchedUser.Id, &exp)
+	if err != nil {
+		return nil, utils.InternalServerErr
+	}
 
 	return group, nil
 }
@@ -104,7 +114,7 @@ func (d *DefaultService) RefreshToken(token *auth.CustomClaims) (*auth.TokenGrou
 	}
 
 	// Deleting the token.
-	deleted, err := d.repository.DeleteToken(&tokenId)
+	deleted, err := d.repository.DeleteTokenById(&tokenId)
 	if err != nil {
 		return nil, utils.InternalServerErr
 	}
