@@ -67,7 +67,7 @@ func (p *PostgresRepository) DeleteUser(id *uuid.UUID) error {
 	return err
 }
 
-func (p *PostgresRepository) AddToken(userId, tokenId *uuid.UUID, exp *time.Time) error {
+func (p *PostgresRepository) AddToken(tokenId, userId *uuid.UUID, exp *time.Time) error {
 	_, err := p.database.Exec("INSERT INTO tokens(id, user_id, expire_date) VALUES ($1, $2, $3)", *tokenId, *userId, *exp)
 	return err
 }
