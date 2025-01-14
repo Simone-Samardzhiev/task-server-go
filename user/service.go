@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"server/auth"
 	"server/utils"
+	"time"
 )
 
 // Service type interface manage users business logic.
@@ -40,7 +41,7 @@ func (d *DefaultService) Register(user *JsonUser) error {
 	}
 
 	// Hash the user passwords for security.
-	hash, err := auth.HashPassword(&user.Password)
+	hash, err := auth.HashPassword(user.Password)
 	if err != nil {
 		return utils.InternalServerErr
 	}
@@ -72,17 +73,20 @@ func (d *DefaultService) Login(user *JsonUser) (*auth.TokenGroup, error) {
 	}
 
 	// Check if the passwords match.
-	if !auth.CheckPassword(&fetchedUser.Password, &user.Password) {
+	if !auth.CheckPassword(user.Password, fetchedUser.Password) {
 		return nil, utils.UnauthorizedErr
 	}
 
 	// Creating refresh token for the user.
 	tokenId := uuid.New()
+	exp := time.Now().Add(time.Hour * 24 * 30)
 
-	group, err := auth.DefaultJWTService.GenerateTokenGroup(&tokenId, &fetchedUser.Id)
+	group, err := auth.DefaultJWTService.GenerateTokenGroup(&tokenId, &fetchedUser.Id, &exp)
 	if err != nil {
 		return nil, utils.InternalServerErr
 	}
+
+	err = d.repository.AddToken(&fetchedUser.Id, &exp)
 
 	return group, nil
 }
@@ -93,8 +97,14 @@ func (d *DefaultService) RefreshToken(token *auth.CustomClaims) (*auth.TokenGrou
 		return nil, utils.UnauthorizedErr
 	}
 
+	// Parse the token id.
+	tokenId, err := uuid.Parse(token.ID)
+	if err != nil {
+		return nil, utils.UnauthorizedErr
+	}
+
 	// Deleting the token.
-	deleted, err := d.repository.DeleteToken(token)
+	deleted, err := d.repository.DeleteToken(&tokenId)
 	if err != nil {
 		return nil, utils.InternalServerErr
 	}
