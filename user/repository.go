@@ -27,6 +27,7 @@ type Repository interface {
 	// DeleteTokenById will delete a token and return true if the token was deleted.
 	DeleteTokenById(id *uuid.UUID) (bool, error)
 
+	// DeleteTokenByUserId will delete token that belongs to a user.
 	DeleteTokenByUserId(id *uuid.UUID) error
 }
 
