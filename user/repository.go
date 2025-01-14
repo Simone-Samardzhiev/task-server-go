@@ -22,10 +22,12 @@ type Repository interface {
 	DeleteUser(id *uuid.UUID) error
 
 	// AddToken will add a new token.
-	AddToken(id *uuid.UUID, exp *time.Time) error
+	AddToken(tokenID, userId *uuid.UUID, exp *time.Time) error
 
-	// DeleteToken will delete a token and return true if the token was deleted.
-	DeleteToken(id *uuid.UUID) (bool, error)
+	// DeleteTokenById will delete a token and return true if the token was deleted.
+	DeleteTokenById(id *uuid.UUID) (bool, error)
+
+	DeleteTokenByUserId(id *uuid.UUID) error
 }
 
 type PostgresRepository struct {
@@ -65,16 +67,21 @@ func (p *PostgresRepository) DeleteUser(id *uuid.UUID) error {
 	return err
 }
 
-func (p *PostgresRepository) AddToken(id *uuid.UUID, exp *time.Time) error {
-	_, err := p.database.Exec("INSERT INTO tokens(id, expire_date) VALUES ($1, $2)", *id, *exp)
+func (p *PostgresRepository) AddToken(userId, tokenId *uuid.UUID, exp *time.Time) error {
+	_, err := p.database.Exec("INSERT INTO tokens(id, user_id, expire_date) VALUES ($1, $2, $3)", *tokenId, *userId, *exp)
 	return err
 }
 
-func (p *PostgresRepository) DeleteToken(id *uuid.UUID) (bool, error) {
+func (p *PostgresRepository) DeleteTokenById(id *uuid.UUID) (bool, error) {
 	result, err := p.database.Exec("DELETE FROM tokens WHERE id = $1", *id)
 	if err != nil {
 		return false, err
 	}
 	count, err := result.RowsAffected()
 	return count > 0, err
+}
+
+func (p *PostgresRepository) DeleteTokenByUserId(userId *uuid.UUID) error {
+	_, err := p.database.Exec("DELETE FROM tokens WHERE user_id = $1", *userId)
+	return err
 }
