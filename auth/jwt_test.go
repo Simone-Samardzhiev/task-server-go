@@ -5,14 +5,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestEncode(t *testing.T) {
 	id := uuid.New()
 	sub := uuid.New()
+	exp := time.Now().Add(time.Hour)
 
 	// Check if GenerateTokenGroup will return an error.
-	group, err := DefaultJWTService.GenerateTokenGroup(&id, &sub)
+	group, err := DefaultJWTService.GenerateTokenGroup(&id, &sub, &exp)
 	if err != nil {
 		t.Error(err)
 	}
@@ -23,8 +25,9 @@ func TestEncode(t *testing.T) {
 func TestDecode(t *testing.T) {
 	id := uuid.New()
 	sub := uuid.New()
+	exp := time.Now().Add(time.Hour)
 
-	group, err := DefaultJWTService.GenerateTokenGroup(&id, &sub)
+	group, err := DefaultJWTService.GenerateTokenGroup(&id, &sub, &exp)
 	if err != nil {
 		t.Error(err)
 	}
@@ -56,7 +59,8 @@ func TestDecode(t *testing.T) {
 func TestJWTMiddlewareForRefreshToken(t *testing.T) {
 	id := uuid.New()
 	sub := uuid.New()
-	tokenGroup, err := DefaultJWTService.GenerateTokenGroup(&id, &sub)
+	exp := time.Now().Add(time.Hour)
+	tokenGroup, err := DefaultJWTService.GenerateTokenGroup(&id, &sub, &exp)
 
 	if err != nil {
 		t.Error(err)
@@ -92,7 +96,8 @@ func TestJWTMiddlewareForRefreshToken(t *testing.T) {
 func TestJWTMiddlewareForAccessToken(t *testing.T) {
 	id := uuid.New()
 	sub := uuid.New()
-	tokenGroup, err := DefaultJWTService.GenerateTokenGroup(&id, &sub)
+	exp := time.Now().Add(time.Hour)
+	tokenGroup, err := DefaultJWTService.GenerateTokenGroup(&id, &sub, &exp)
 	if err != nil {
 		t.Error(err)
 	}
