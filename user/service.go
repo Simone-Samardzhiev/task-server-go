@@ -142,5 +142,10 @@ func (d *DefaultService) RefreshToken(token *auth.CustomClaims) (*auth.TokenGrou
 		return nil, utils.InternalServerErr
 	}
 
+	err = d.repository.AddToken(&tokenId, &sub, &exp)
+	if err != nil {
+		return nil, utils.InternalServerErr
+	}
+
 	return group, nil
 }
