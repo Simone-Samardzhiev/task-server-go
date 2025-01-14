@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
-	"server/auth"
+	"time"
 )
 
 // Repository is interface that will manage user data.
@@ -22,10 +22,10 @@ type Repository interface {
 	DeleteUser(id *uuid.UUID) error
 
 	// AddToken will add a new token.
-	AddToken(token *auth.CustomClaims) error
+	AddToken(id *uuid.UUID, exp *time.Time) error
 
 	// DeleteToken will delete a token and return true if the token was deleted.
-	DeleteToken(token *auth.CustomClaims) (bool, error)
+	DeleteToken(id *uuid.UUID) (bool, error)
 }
 
 type PostgresRepository struct {
@@ -65,13 +65,13 @@ func (p *PostgresRepository) DeleteUser(id *uuid.UUID) error {
 	return err
 }
 
-func (p *PostgresRepository) AddToken(token *auth.CustomClaims) error {
-	_, err := p.database.Exec("INSERT INTO tokens(id, expire_date) VALUES ($1, $2)", token.ID, token.ExpiresAt)
+func (p *PostgresRepository) AddToken(id *uuid.UUID, exp *time.Time) error {
+	_, err := p.database.Exec("INSERT INTO tokens(id, expire_date) VALUES ($1, $2)", *id, *exp)
 	return err
 }
 
-func (p *PostgresRepository) DeleteToken(token *auth.CustomClaims) (bool, error) {
-	result, err := p.database.Exec("DELETE FROM tokens WHERE id = $1", token.ID)
+func (p *PostgresRepository) DeleteToken(id *uuid.UUID) (bool, error) {
+	result, err := p.database.Exec("DELETE FROM tokens WHERE id = $1", *id)
 	if err != nil {
 		return false, err
 	}
