@@ -126,7 +126,8 @@ func (d *DefaultService) RefreshToken(token *auth.CustomClaims) (*auth.TokenGrou
 	}
 
 	// Creating the group.
-	group, err := auth.DefaultJWTService.GenerateTokenGroup(&id, &sub)
+	exp := time.Now().Add(time.Hour * 24 * 30)
+	group, err := auth.DefaultJWTService.GenerateTokenGroup(&id, &sub, &exp)
 	if err != nil {
 		return nil, utils.InternalServerErr
 	}
