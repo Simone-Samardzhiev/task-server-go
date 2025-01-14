@@ -40,14 +40,14 @@ type JWTService struct {
 }
 
 // GenerateTokenGroup will return [TokenGroup] setting the tokens id and subject.
-func (s *JWTService) GenerateTokenGroup(id, sub *uuid.UUID) (*TokenGroup, error) {
+func (s *JWTService) GenerateTokenGroup(id, sub *uuid.UUID, exp *time.Time) (*TokenGroup, error) {
 	// Creating the refresh token.
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, CustomClaims{
 		Type: RefreshToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        id.String(),
 			Subject:   sub.String(),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 30)),
+			ExpiresAt: jwt.NewNumericDate(*exp),
 		},
 	})
 
