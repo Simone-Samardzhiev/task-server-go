@@ -118,7 +118,7 @@ type Key string
 const TokenKey Key = "token"
 
 // JWTMiddleware used to wrap handlers if they need to be access by token.
-func JWTMiddleware(next http.Handler) http.Handler {
+func JWTMiddleware(next http.Handler, tokenType TokenType) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Getting the header.
 		header := r.Header.Get("Authorization")
@@ -129,6 +129,11 @@ func JWTMiddleware(next http.Handler) http.Handler {
 
 		// Parsing the token.
 		token, err := DefaultJWTService.ParseToken(tokenString)
+
+		// Check token type.
+		if token.Type != tokenType {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		}
 
 		// Any error means the token is invalid.
 		if err != nil {

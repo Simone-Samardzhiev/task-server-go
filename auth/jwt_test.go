@@ -81,7 +81,7 @@ func TestJWTMiddlewareForRefreshToken(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-	}))
+	}), RefreshToken)
 
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -115,7 +115,7 @@ func TestJWTMiddlewareForAccessToken(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-	}))
+	}), AccessToken)
 
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)

@@ -33,7 +33,7 @@ func (s *Server) Start() error {
 	mux := http.NewServeMux()
 	mux.Handle("POST /users/register", userHandler.Register())
 	mux.Handle("POST /users/login", userHandler.Login())
-	mux.Handle("GET /users/refresh", auth.JWTMiddleware(userHandler.Refresh()))
+	mux.Handle("GET /users/refresh", auth.JWTMiddleware(userHandler.Refresh(), auth.RefreshToken))
 
 	return http.ListenAndServe(s.port, mux)
 }
