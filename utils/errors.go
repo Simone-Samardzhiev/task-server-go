@@ -11,8 +11,11 @@ var (
 	// UnauthorizedErr is returned when user credentials are invalid.
 	UnauthorizedErr = errors.New("unauthorized")
 
-	// ConflictErr is return when the service cannot proceed with the requests due to conflict of data.
+	// ConflictErr is returned when the service cannot proceed with the requests due to conflict of data.
 	ConflictErr = errors.New("conflict")
+
+	// NotFoundErr is returned when the service cannot find the resource.
+	NotFoundErr = errors.New("not found")
 )
 
 const (
@@ -27,4 +30,7 @@ const (
 
 	// BadRequestErrorMessage when http body couldn't be parsed.
 	BadRequestErrorMessage = "Bad Request"
+
+	// NotFoundErrorMessage should be sent when there is an [NotFoundErr]
+	NotFoundErrorMessage = "Not Found"
 )
