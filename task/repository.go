@@ -17,7 +17,7 @@ type Repository interface {
 	UpdateTask(task *Task) (bool, error)
 
 	// DeleteTask will delete an existing task.
-	DeleteTask(task *Task) (bool, error)
+	DeleteTask(id *uuid.UUID) (bool, error)
 }
 
 type PostgresRepository struct {
@@ -73,8 +73,8 @@ func (p *PostgresRepository) UpdateTask(task *Task) (bool, error) {
 	return count > 0, err
 }
 
-func (p *PostgresRepository) DeleteTask(task *Task) (bool, error) {
-	result, err := p.database.Exec("DELETE FROM tasks WHERE id = $1", task.Id)
+func (p *PostgresRepository) DeleteTask(id *uuid.UUID) (bool, error) {
+	result, err := p.database.Exec("DELETE FROM tasks WHERE id = $1", *id)
 	count, err := result.RowsAffected()
 	return count > 0, err
 }
