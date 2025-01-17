@@ -54,7 +54,7 @@ func (d *DefaultService) GetTasks(token *auth.CustomClaims) ([]Task, error) {
 func (d *DefaultService) AddTask(task *DataTask, token *auth.CustomClaims) (*Task, error) {
 	id, err := d.ParseSubjectId(token)
 	if err != nil {
-		return nil, err
+		return nil, utils.InternalServerErr
 	}
 
 	newTask := &Task{
