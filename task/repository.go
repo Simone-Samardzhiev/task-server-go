@@ -2,6 +2,7 @@ package task
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -43,7 +44,11 @@ func (p *PostgresRepository) GetTasksByUserId(userId *uuid.UUID) ([]Task, error)
 
 	tasks := make([]Task, 0, count)
 
-	rows, err := p.database.Query("SELECT id, name, description, type, due_date, date_completed, date_deleted FROM tasks WHERE user_id = $1", userId)
+	rows, err := p.database.Query("SELECT id, name, description, type, due_date, date_completed, date_deleted FROM tasks WHERE user_id = $1", *userId)
+	if err != nil {
+		return nil, err
+	}
+
 	for rows.Next() {
 		var task Task
 		err = rows.Scan(&task.Id, &task.Name, &task.Description, &task.Type, &task.DueDate, &task.DateCompleted, &task.DateDeleted)
@@ -51,9 +56,10 @@ func (p *PostgresRepository) GetTasksByUserId(userId *uuid.UUID) ([]Task, error)
 			return nil, err
 		}
 
-		_ = append(tasks, task)
+		tasks = append(tasks, task)
 	}
 
+	fmt.Println(tasks)
 	return tasks, nil
 }
 

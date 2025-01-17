@@ -2,6 +2,7 @@ package task
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/google/uuid"
 	"server/auth"
 	"server/utils"
@@ -40,7 +41,7 @@ func (d *DefaultService) ParseSubjectId(token *auth.CustomClaims) (*uuid.UUID, e
 func (d *DefaultService) GetTasks(token *auth.CustomClaims) ([]Task, error) {
 	id, err := d.ParseSubjectId(token)
 	if err != nil {
-		return nil, err
+		return nil, utils.InternalServerErr
 	}
 
 	tasks, err := d.repository.GetTasksByUserId(id)
@@ -53,9 +54,6 @@ func (d *DefaultService) GetTasks(token *auth.CustomClaims) ([]Task, error) {
 
 func (d *DefaultService) AddTask(task *DataTask, token *auth.CustomClaims) (*Task, error) {
 	id, err := d.ParseSubjectId(token)
-	if err != nil {
-		return nil, utils.InternalServerErr
-	}
 
 	newTask := &Task{
 		Id:          uuid.New(),
@@ -79,6 +77,7 @@ func (d *DefaultService) AddTask(task *DataTask, token *auth.CustomClaims) (*Tas
 
 	err = d.repository.AddTask(newTask, id)
 	if err != nil {
+		fmt.Println(err)
 		return nil, utils.InternalServerErr
 	}
 	return newTask, nil
