@@ -38,10 +38,10 @@ func (s *Server) Start() error {
 	mux.Handle("POST /users/register", userHandler.Register())
 	mux.Handle("POST /users/login", userHandler.Login())
 	mux.Handle("GET /users/refresh", auth.JWTMiddleware(userHandler.Refresh(), auth.RefreshToken))
-	mux.Handle("GET tasks/all", auth.JWTMiddleware(taskHandler.GetTasks(), auth.AccessToken))
-	mux.Handle("POST tasks/add", auth.JWTMiddleware(taskHandler.AddTask(), auth.AccessToken))
-	mux.Handle("PUT tasks/update", auth.JWTMiddleware(taskHandler.UpdateTask(), auth.AccessToken))
-	mux.Handle("DELETE tasks/delete", auth.JWTMiddleware(taskHandler.DeleteTask(), auth.AccessToken))
+	mux.Handle("GET /tasks/all", auth.JWTMiddleware(taskHandler.GetTasks(), auth.AccessToken))
+	mux.Handle("POST /tasks/add", auth.JWTMiddleware(taskHandler.AddTask(), auth.AccessToken))
+	mux.Handle("PUT /tasks/update", auth.JWTMiddleware(taskHandler.UpdateTask(), auth.AccessToken))
+	mux.Handle("DELETE /tasks/delete", auth.JWTMiddleware(taskHandler.DeleteTask(), auth.AccessToken))
 
 	return http.ListenAndServe(s.port, mux)
 }
