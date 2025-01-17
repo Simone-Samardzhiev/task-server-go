@@ -124,6 +124,7 @@ func JWTMiddleware(next http.Handler, tokenType TokenType) http.Handler {
 		header := r.Header.Get("Authorization")
 		if header == "" {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
 		}
 		tokenString := strings.TrimPrefix(header, "Bearer ")
 
@@ -131,13 +132,20 @@ func JWTMiddleware(next http.Handler, tokenType TokenType) http.Handler {
 		token, err := DefaultJWTService.ParseToken(tokenString)
 
 		// Check token type.
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+
 		if token.Type != tokenType {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
 		}
 
 		// Any error means the token is invalid.
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
 		}
 
 		// Putting the token in a context so the next handler can access it.
