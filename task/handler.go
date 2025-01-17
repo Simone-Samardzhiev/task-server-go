@@ -28,6 +28,10 @@ type DefaultHandler struct {
 	service Service
 }
 
+func NewDefaultHandler(service Service) *DefaultHandler {
+	return &DefaultHandler{service: service}
+}
+
 func NewHandler(service Service) Handler {
 	return &DefaultHandler{service: service}
 }
