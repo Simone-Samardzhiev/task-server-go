@@ -51,12 +51,12 @@ func (d *DefaultHandler) GetTasks() http.Handler {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		err = json.NewEncoder(w).Encode(tasks)
 		if err != nil {
 			http.Error(w, utils.InternalServerErrorMessage, http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	})
 }
 
@@ -82,12 +82,12 @@ func (d *DefaultHandler) AddTask() http.Handler {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		err = json.NewEncoder(w).Encode(createdTask)
 		if err != nil {
 			http.Error(w, utils.InternalServerErrorMessage, http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	})
 }
 
