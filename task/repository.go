@@ -2,7 +2,6 @@ package task
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -59,7 +58,6 @@ func (p *PostgresRepository) GetTasksByUserId(userId *uuid.UUID) ([]Task, error)
 		tasks = append(tasks, task)
 	}
 
-	fmt.Println(tasks)
 	return tasks, nil
 }
 
