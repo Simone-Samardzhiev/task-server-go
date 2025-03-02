@@ -31,3 +31,17 @@ func getEnv(key, fallback string) string {
 
 	return fallback
 }
+
+// getEnvInt will return environment variable parsed as int with a key.
+// If the variable is not found or not valid int it will return the fallback.
+func getEnvInt(key string, fallback int) int {
+	if value, ok := os.LookupEnv(key); ok {
+		valueInt, err := strconv.Atoi(value)
+		if err != nil {
+			return fallback
+		}
+		return valueInt
+	}
+
+	return fallback
+}
