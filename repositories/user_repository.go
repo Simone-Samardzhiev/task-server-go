@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	_ "github.com/lib/pq"
 )
 
 // UserRepository interface manages the data of users.
@@ -56,4 +57,10 @@ func (r *PostgresUserRepository) AddUser(ctx context.Context, email string, user
 		VALUES ($1, $2, $3)`,
 	)
 	return err
+}
+
+func NewPostgresUserRepository(db *sql.DB) *PostgresUserRepository {
+	return &PostgresUserRepository{
+		db: db,
+	}
 }

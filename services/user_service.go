@@ -50,3 +50,9 @@ func (s *DefaultUseService) Register(ctx context.Context, payload models.Registr
 
 	return nil
 }
+
+func NewDefaultService(userRepository repositories.UserRepository) *DefaultUseService {
+	return &DefaultUseService{
+		userRepository: userRepository,
+	}
+}

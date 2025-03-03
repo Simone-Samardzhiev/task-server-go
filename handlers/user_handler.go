@@ -36,8 +36,13 @@ func (h *DefaultUserHandler) Register() http.HandlerFunc {
 
 		if response == nil {
 			utils.HandleErrorResponse(w, response)
+			return
 		}
+	}
+}
 
-		w.WriteHeader(http.StatusCreated)
+func NewDefaultUserHandler(userRepository services.UserService) *DefaultUserHandler {
+	return &DefaultUserHandler{
+		userService: userRepository,
 	}
 }

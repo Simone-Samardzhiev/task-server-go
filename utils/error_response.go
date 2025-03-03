@@ -20,19 +20,24 @@ func NewErrorResponse(message string, statusCode int) *ErrorResponse {
 	}
 }
 
+// HandleErrorResponse will return true if the [ErrorResponse] is not nil and
+// it has responded otherwise false.
 func HandleErrorResponse(w http.ResponseWriter, response *ErrorResponse) bool {
 	if response == nil {
 		return false
 	}
 
-	w.WriteHeader(response.StatusCode)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
 	err := json.NewEncoder(w).Encode(response)
+
 	if err != nil {
-		http.Error(w, "There was an unknwon error", http.StatusInternalServerError)
+		http.Error(w, "There was an unknown error", http.StatusInternalServerError)
+		println("here")
+		return true
 	}
 
-	return false
+	return true
 }
 
 func InternalServerError() *ErrorResponse {
