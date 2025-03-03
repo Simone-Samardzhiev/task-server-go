@@ -37,7 +37,7 @@ type RegistrationsPayload struct {
 	Password string `json:"password"`
 }
 
-func (u *RegistrationsPayload) ValidatePayload() *utils.ValidateResponse {
+func (u *RegistrationsPayload) ValidatePayload() *utils.ErrorResponse {
 	if res := u.ValidateEmail(); res != nil {
 		return res
 	}
@@ -53,23 +53,23 @@ func (u *RegistrationsPayload) ValidatePayload() *utils.ValidateResponse {
 	return nil
 }
 
-func (u *RegistrationsPayload) ValidateEmail() *utils.ValidateResponse {
+func (u *RegistrationsPayload) ValidateEmail() *utils.ErrorResponse {
 	if strings.Contains(u.Email, " ") {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Email cannot contain spaces",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
 	if u.Email == "" {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Email is required",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
 	if !strings.Contains(u.Email, "@") {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Email must contain @",
 			StatusCode: http.StatusBadRequest,
 		}
@@ -77,28 +77,28 @@ func (u *RegistrationsPayload) ValidateEmail() *utils.ValidateResponse {
 
 	parts := strings.Split(u.Email, "@")
 	if len(parts) != 2 {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Email must contain @ only once",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
 	if parts[0] == "" {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Email is missing local part (before @)",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
 	if parts[1] == "" {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Email is missing domain part (after @)",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
 	if !strings.Contains(parts[1], ".") {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Domain must contain .",
 			StatusCode: http.StatusBadRequest,
 		}
@@ -107,16 +107,16 @@ func (u *RegistrationsPayload) ValidateEmail() *utils.ValidateResponse {
 	return nil
 }
 
-func (u *RegistrationsPayload) ValidateUsername() *utils.ValidateResponse {
+func (u *RegistrationsPayload) ValidateUsername() *utils.ErrorResponse {
 	if strings.Contains(u.Username, " ") {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Username cannot contain spaces",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
 	if u.Username == "" {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Username is required",
 			StatusCode: http.StatusBadRequest,
 		}
@@ -125,30 +125,30 @@ func (u *RegistrationsPayload) ValidateUsername() *utils.ValidateResponse {
 	return nil
 }
 
-func (u *RegistrationsPayload) ValidatePassword() *utils.ValidateResponse {
+func (u *RegistrationsPayload) ValidatePassword() *utils.ErrorResponse {
 	if strings.Contains(u.Password, " ") {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Password cannot contain spaces",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
 	if u.Password == "" {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Password is required",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
 	if len(u.Password) < 8 || len(u.Password) > 40 {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Password must be between 8 and 40 characters",
 			StatusCode: http.StatusBadRequest,
 		}
 	}
 
 	if !strings.ContainsAny(u.Password, "-_@*&#!") {
-		return &utils.ValidateResponse{
+		return &utils.ErrorResponse{
 			Message:    "Password must contain at least one of this special characters(- _ @ * & # !)",
 			StatusCode: http.StatusBadRequest,
 		}
