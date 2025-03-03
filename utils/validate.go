@@ -8,7 +8,7 @@ type Payload interface {
 	ValidatePayload() *ErrorResponse
 }
 
-// HandlePayload will take the check the payload.
+// HandlePayload will check the payload.
 // If the payload is not valid it will respond with the [ErrorResponse].
 // It returns true if the handler have responded and false if the payload is valid
 func HandlePayload(w http.ResponseWriter, payload Payload) bool {
