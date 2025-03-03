@@ -34,3 +34,17 @@ func HandleErrorResponse(w http.ResponseWriter, response *ErrorResponse) bool {
 
 	return false
 }
+
+func InternalServerError() *ErrorResponse {
+	return &ErrorResponse{
+		Message:    "Internal Server Error",
+		StatusCode: http.StatusInternalServerError,
+	}
+}
+
+func InvalidJson() *ErrorResponse {
+	return &ErrorResponse{
+		Message:    "Invalid Json",
+		StatusCode: http.StatusBadRequest,
+	}
+}
