@@ -43,7 +43,7 @@ func (s *DefaultUseService) Register(ctx context.Context, payload models.Registr
 		return utils.InternalServerError()
 	}
 
-	err = s.userRepository.AddUser(ctx, payload.Username, payload.Email, hash)
+	err = s.userRepository.AddUser(ctx, payload.Email, payload.Username, hash)
 	if err != nil {
 		return utils.InternalServerError()
 	}
