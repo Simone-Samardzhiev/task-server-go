@@ -1,6 +1,9 @@
 package utils
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 // ErrorResponse is a response returned when the payload is empty.
 type ErrorResponse struct {
@@ -23,9 +26,11 @@ func HandleErrorResponse(w http.ResponseWriter, response *ErrorResponse) bool {
 	}
 
 	w.WriteHeader(response.StatusCode)
-	_, err := w.Write([]byte(response.Message))
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
-		http.Error(w, "An unknown error occurred", http.StatusInternalServerError)
+		http.Error(w, "There was an unknwon error", http.StatusInternalServerError)
 	}
+
 	return false
 }
