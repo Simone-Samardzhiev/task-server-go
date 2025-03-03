@@ -34,10 +34,10 @@ func (h *DefaultUserHandler) Register() http.HandlerFunc {
 
 		response := h.userService.Register(r.Context(), payload)
 
-		if response == nil {
-			utils.HandleErrorResponse(w, response)
+		if utils.HandleErrorResponse(w, response) {
 			return
 		}
+		w.WriteHeader(http.StatusCreated)
 	}
 }
 
