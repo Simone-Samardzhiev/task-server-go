@@ -55,6 +55,9 @@ func (r *PostgresUserRepository) AddUser(ctx context.Context, email string, user
 	_, err := r.db.ExecContext(ctx,
 		`INSERT INTO users (email, username, password) 
 		VALUES ($1, $2, $3)`,
+		email,
+		username,
+		password,
 	)
 	return err
 }
