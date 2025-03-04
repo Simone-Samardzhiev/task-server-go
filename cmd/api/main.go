@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"server/auth/tokens"
 	"server/config"
 	"server/database"
 	"server/handlers"
@@ -12,8 +13,9 @@ import (
 
 // App is the main entry of the application.
 type App struct {
-	config   config.Config
-	handlers handlers.Handlers
+	config        config.Config
+	handlers      handlers.Handlers
+	authenticator *tokens.JWTAuthenticator
 }
 
 // start will run the server.
@@ -39,6 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	authenticator := tokens.NewJWTAuthenticator(conf.AuthConfig.JwtSecret, conf.AuthConfig.JwtIssuer)
 	app := &App{
 		config: *conf,
 		handlers: handlers.Handlers{
@@ -48,6 +51,7 @@ func main() {
 				),
 			),
 		},
+		authenticator: authenticator,
 	}
 
 	err = app.start()
