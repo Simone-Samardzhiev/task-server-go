@@ -74,7 +74,7 @@ func (r *PostgresUserRepository) GetUserByEmail(ctx context.Context, email strin
 	)
 
 	var user models.User
-	err := row.Scan(&user)
+	err := row.Scan(&user.Id, &user.Email, &user.Username, &user.Password)
 	return user, err
 }
 
