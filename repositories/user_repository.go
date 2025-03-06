@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	_ "github.com/lib/pq"
+	"server/models"
 )
 
 // UserRepository interface manages the data of users.
@@ -16,6 +17,9 @@ type UserRepository interface {
 
 	// AddUser will insert a new user.
 	AddUser(ctx context.Context, email string, username string, password string) error
+
+	// GetUserByEmail will fetch user by the email. If the user email doesn't exit error is returned.s
+	GetUserByEmail(ctx context.Context, email string) (models.User, error)
 }
 
 // PostgresUserRepository struct manages data using connection to postgres database.
@@ -60,6 +64,18 @@ func (r *PostgresUserRepository) AddUser(ctx context.Context, email string, user
 		password,
 	)
 	return err
+}
+
+func (r *PostgresUserRepository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+	row := r.db.QueryRowContext(ctx,
+		`SELECT * FROM users
+		WHERE email = $1`,
+		email,
+	)
+
+	var user models.User
+	err := row.Scan(&user)
+	return user, err
 }
 
 func NewPostgresUserRepository(db *sql.DB) *PostgresUserRepository {

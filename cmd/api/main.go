@@ -22,6 +22,7 @@ type App struct {
 func (a *App) start() error {
 	mux := http.NewServeMux()
 	mux.Handle("POST /users/register", a.handlers.UserHandler.Register())
+	mux.Handle("POST /users/login", a.handlers.UserHandler.Login())
 
 	server := http.Server{
 		Addr:    ":8080",
@@ -48,6 +49,8 @@ func main() {
 			UserHandler: handlers.NewDefaultUserHandler(
 				services.NewDefaultService(
 					repositories.NewPostgresUserRepository(db),
+					repositories.NewPostgresTokenRepository(db),
+					authenticator,
 				),
 			),
 		},

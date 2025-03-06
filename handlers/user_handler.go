@@ -45,7 +45,26 @@ func (h *DefaultUserHandler) Register() http.HandlerFunc {
 
 func (h *DefaultUserHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var payload models.LoginPayload
+		err := json.NewDecoder(r.Body).Decode(&payload)
+		if err != nil {
+			utils.HandleErrorResponse(w, utils.InvalidJson())
+			return
+		}
 
+		tokens, errorResponse := h.userService.Login(r.Context(), payload)
+		if errorResponse != nil {
+			utils.HandleErrorResponse(w, errorResponse)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(tokens)
+		if err != nil {
+			utils.HandleErrorResponse(w, utils.InvalidJson())
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
