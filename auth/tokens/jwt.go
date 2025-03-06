@@ -92,7 +92,7 @@ func (a *JWTAuthenticator) VerifyToken(tokenString string, tokenType TokenType) 
 		return nil, errors.New("invalid token")
 	}
 
-	return nil, err
+	return claims, err
 }
 
 // Middleware method return a middleware for jwt token.
