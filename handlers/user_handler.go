@@ -52,14 +52,15 @@ func (h *DefaultUserHandler) Login() http.HandlerFunc {
 			return
 		}
 
-		tokens, errorResponse := h.userService.Login(r.Context(), payload)
+		tokenGroup, errorResponse := h.userService.Login(r.Context(), payload)
 		if errorResponse != nil {
 			utils.HandleErrorResponse(w, errorResponse)
 			return
 		}
 
+		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(tokens)
+		err = json.NewEncoder(w).Encode(tokenGroup)
 		if err != nil {
 			utils.HandleErrorResponse(w, utils.InternalServerError())
 			return
