@@ -61,7 +61,7 @@ func (h *DefaultUserHandler) Login() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(tokens)
 		if err != nil {
-			utils.HandleErrorResponse(w, utils.InvalidJson())
+			utils.HandleErrorResponse(w, utils.InternalServerError())
 			return
 		}
 		w.WriteHeader(http.StatusOK)
