@@ -11,6 +11,8 @@ import (
 // UserHandler interface handles user requests.
 type UserHandler interface {
 	Register() http.HandlerFunc
+
+	Login() http.HandlerFunc
 }
 
 // DefaultUserHandler interface is the default implementation of [UserHandler]
@@ -38,6 +40,12 @@ func (h *DefaultUserHandler) Register() http.HandlerFunc {
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
+	}
+}
+
+func (h *DefaultUserHandler) Login() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
 	}
 }
 
