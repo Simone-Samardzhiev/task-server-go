@@ -16,7 +16,7 @@ type TokenRepository interface {
 	DeleteToken(ctx context.Context, tokenId uuid.UUID) error
 
 	// CheckToken will search the token id the database and return its subject - The user id.
-	CheckToken(ctx context.Context, tokenId uuid.UUID) (uuid.UUID, error)
+	CheckToken(ctx context.Context, tokenId uuid.UUID) (int, error)
 }
 
 type PostgresTokenRepository struct {
@@ -47,18 +47,18 @@ func (r *PostgresTokenRepository) DeleteToken(ctx context.Context, tokenId uuid.
 	return err
 }
 
-func (r *PostgresTokenRepository) CheckToken(ctx context.Context, tokenId uuid.UUID) (uuid.UUID, error) {
+func (r *PostgresTokenRepository) CheckToken(ctx context.Context, tokenId uuid.UUID) (int, error) {
 	row := r.db.QueryRowContext(
 		ctx,
-		`SELECT user_id FROM tokens
+		`SELECT id FROM tokens
                WHERE id = $1`,
 		tokenId,
 	)
 
-	var userId uuid.UUID
+	var userId int
 	err := row.Scan(&userId)
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
 	return userId, nil
 }
