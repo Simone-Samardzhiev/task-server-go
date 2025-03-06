@@ -41,15 +41,13 @@ func HandleErrorResponse(w http.ResponseWriter, response *ErrorResponse) bool {
 }
 
 func InternalServerError() *ErrorResponse {
-	return &ErrorResponse{
-		Message:    "Internal Server Error",
-		StatusCode: http.StatusInternalServerError,
-	}
+	return NewErrorResponse("Internal Server Error", http.StatusInternalServerError)
 }
 
 func InvalidJson() *ErrorResponse {
-	return &ErrorResponse{
-		Message:    "Invalid Json",
-		StatusCode: http.StatusBadRequest,
-	}
+	return NewErrorResponse("Invalid Json", http.StatusBadRequest)
+}
+
+func InvalidToken() *ErrorResponse {
+	return NewErrorResponse("Invalid token", http.StatusUnauthorized)
 }
