@@ -30,6 +30,14 @@ type LoginPayload struct {
 	Password string `json:"password"`
 }
 
+func (p *LoginPayload) ValidatePayload() *utils.ErrorResponse {
+	if p.Email == "" || p.Password == "" {
+		return utils.NewErrorResponse("Invalid credentials", http.StatusUnauthorized)
+	}
+
+	return nil
+}
+
 // RegistrationsPayload is a struct holding the user information.
 type RegistrationsPayload struct {
 	Email    string `json:"email"`
