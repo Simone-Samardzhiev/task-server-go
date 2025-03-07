@@ -50,7 +50,7 @@ func (r *PostgresTokenRepository) DeleteToken(ctx context.Context, tokenId uuid.
 func (r *PostgresTokenRepository) CheckToken(ctx context.Context, tokenId uuid.UUID) (int, error) {
 	row := r.db.QueryRowContext(
 		ctx,
-		`SELECT id FROM tokens
+		`SELECT user_id FROM tokens
                WHERE id = $1`,
 		tokenId,
 	)

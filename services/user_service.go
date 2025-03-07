@@ -21,6 +21,10 @@ type UserService interface {
 
 	// Login will check used credentials and return group of token if user is authenticated.
 	Login(ctx context.Context, payload models.LoginPayload) (*models.TokenGroup, *utils.ErrorResponse)
+
+	// Refresh will check if the token is valid. If the token is valid
+	// it will be deleted and new refresh token and access token will be generated.
+	Refresh(ctx context.Context, token tokens.Token) (*models.TokenGroup, *utils.ErrorResponse)
 }
 
 // DefaultUseService struct is the default implementation of [UserService].
@@ -61,6 +65,28 @@ func (s *DefaultUseService) Register(ctx context.Context, payload models.Registr
 	return nil
 }
 
+// createTokenGroup will create a refresh token add it to the database and create an access token.
+func (s *DefaultUseService) createTokenGroup(ctx context.Context, userId int) (*models.TokenGroup, *utils.ErrorResponse) {
+	tokenId := uuid.New()
+	tokenExp := time.Now().Add(time.Hour * 24 * 7)
+	refreshToken, err := s.authenticator.CreateRefreshToken(tokenId, tokenExp)
+	if err != nil {
+		return nil, utils.InternalServerError()
+	}
+
+	err = s.tokensRepository.AddToken(ctx, tokenId, tokenExp, userId)
+	if err != nil {
+		return nil, utils.InternalServerError()
+	}
+
+	accessToken, err := s.authenticator.CreateAccessToken(userId, time.Now().Add(time.Minute*10))
+	if err != nil {
+		return nil, utils.InternalServerError()
+	}
+
+	return models.NewTokenGroup(accessToken, refreshToken), nil
+}
+
 func (s *DefaultUseService) Login(ctx context.Context, payload models.LoginPayload) (*models.TokenGroup, *utils.ErrorResponse) {
 	user, err := s.userRepository.GetUserByEmail(ctx, payload.Email)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -74,24 +100,28 @@ func (s *DefaultUseService) Login(ctx context.Context, payload models.LoginPaylo
 		return nil, utils.NewErrorResponse("Invalid credentials", http.StatusUnauthorized)
 	}
 
-	tokenId := uuid.New()
-	tokenExp := time.Now().Add(time.Hour * 24 * 7)
-	refreshToken, err := s.authenticator.CreateRefreshToken(tokenId, tokenExp)
+	return s.createTokenGroup(ctx, user.Id)
+}
+
+func (s *DefaultUseService) Refresh(ctx context.Context, token tokens.Token) (*models.TokenGroup, *utils.ErrorResponse) {
+	tokenId, err := uuid.Parse(token.ID)
+	if err != nil {
+		return nil, utils.InvalidToken()
+	}
+
+	userId, err := s.tokensRepository.CheckToken(ctx, tokenId)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, utils.InvalidToken()
+	} else if err != nil {
+		return nil, utils.InternalServerError()
+	}
+
+	err = s.tokensRepository.DeleteToken(ctx, tokenId)
 	if err != nil {
 		return nil, utils.InternalServerError()
 	}
 
-	err = s.tokensRepository.AddToken(ctx, tokenId, tokenExp, user.Id)
-	if err != nil {
-		return nil, utils.InternalServerError()
-	}
-
-	accessToken, err := s.authenticator.CreateAccessToken(user.Id, time.Now().Add(time.Minute*10))
-	if err != nil {
-		return nil, utils.InternalServerError()
-	}
-
-	return models.NewTokenGroup(accessToken, refreshToken), nil
+	return s.createTokenGroup(ctx, userId)
 }
 
 func NewDefaultService(userRepository repositories.UserRepository, tokenRepository repositories.TokenRepository, authenticator *tokens.JWTAuthenticator) *DefaultUseService {
