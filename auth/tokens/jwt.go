@@ -119,7 +119,7 @@ func (a *JWTAuthenticator) Middleware(next http.Handler, tokenType TokenType) ht
 			return
 		}
 
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), JWTClaimsKey, claims)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), JWTClaimsKey, *claims)))
 	})
 }
 
