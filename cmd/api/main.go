@@ -30,6 +30,10 @@ func (a *App) start() error {
 			tokens.RefreshTokenType,
 		),
 	)
+	mux.Handle("GET /tasks", a.authenticator.Middleware(
+		a.handlers.TaskHandler.GetTasks(),
+		tokens.AccessTokenType),
+	)
 
 	server := http.Server{
 		Addr:    ":8080",
@@ -58,6 +62,11 @@ func main() {
 					repositories.NewPostgresUserRepository(db),
 					repositories.NewPostgresTokenRepository(db),
 					authenticator,
+				),
+			),
+			TaskHandler: handlers.NewDefaultTaskHandler(
+				services.NewDefaultTaskService(
+					repositories.NewPostgresTaskRepository(db),
 				),
 			),
 		},
