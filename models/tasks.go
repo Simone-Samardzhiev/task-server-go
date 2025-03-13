@@ -4,15 +4,14 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"server/utils"
-	"time"
 )
 
 // NewTaskPayload stores tasks information.
 type NewTaskPayload struct {
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Priority    string    `json:"priority"`
-	Date        time.Time `json:"date"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Priority    string  `json:"priority"`
+	Date        ISOTime `json:"date"`
 }
 
 func (t *NewTaskPayload) ValidatePayload() *utils.ErrorResponse {
