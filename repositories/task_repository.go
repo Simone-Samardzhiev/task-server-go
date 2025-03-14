@@ -8,8 +8,14 @@ import (
 
 // TaskRepository manages tasks data.
 type TaskRepository interface {
-	// GetTasks will return all of the task of the user.
+	// GetTasks will return all tasks of the user.
 	GetTasks(ctx context.Context, userId int) ([]models.TaskPayload, error)
+
+	// CheckPriority will check if the task priority is in the database.
+	CheckPriority(ctx context.Context, priority string) (bool, error)
+
+	// AddTask will add new task.
+	AddTask(ctx context.Context, taskPayload *models.TaskPayload, userId int) error
 }
 
 // PostgresTaskRepository is default implementation of [TaskRepository] using postgres database.
@@ -58,6 +64,36 @@ func (r *PostgresTaskRepository) GetTasks(ctx context.Context, userId int) ([]mo
 	}
 
 	return result, nil
+}
+
+func (r *PostgresTaskRepository) CheckPriority(ctx context.Context, priority string) (bool, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT COUNT(*) FROM priorities
+			WHERE priority = $1`,
+		priority,
+	)
+
+	var count int
+	err := row.Scan(&count)
+	return count > 0, err
+}
+
+func (r *PostgresTaskRepository) AddTask(ctx context.Context, task *models.TaskPayload, userId int) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`INSERT INTO tasks (id, name, description, priority, date, user_id)
+			VALUES ($1, $2, $3, $4, $5, $6)
+		`,
+		task.Id,
+		task.Name,
+		task.Description,
+		task.Priority,
+		&task.Date,
+		userId,
+	)
+
+	return err
 }
 
 func NewPostgresTaskRepository(db *sql.DB) *PostgresTaskRepository {

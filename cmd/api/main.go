@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"server/auth/tokens"
@@ -9,6 +10,7 @@ import (
 	"server/handlers"
 	"server/repositories"
 	"server/services"
+	"time"
 )
 
 // App is the main entry of the application.
@@ -30,9 +32,17 @@ func (a *App) start() error {
 			tokens.RefreshTokenType,
 		),
 	)
-	mux.Handle("GET /tasks", a.authenticator.Middleware(
-		a.handlers.TaskHandler.GetTasks(),
-		tokens.AccessTokenType),
+	mux.Handle(
+		"GET /tasks",
+		a.authenticator.Middleware(
+			a.handlers.TaskHandler.GetTasks(),
+			tokens.AccessTokenType),
+	)
+	mux.Handle(
+		"POST /tasks",
+		a.authenticator.Middleware(
+			a.handlers.TaskHandler.AddTask(),
+			tokens.AccessTokenType),
 	)
 
 	server := http.Server{
@@ -45,6 +55,7 @@ func (a *App) start() error {
 
 func main() {
 	conf, err := config.NewConfig()
+	fmt.Println(time.Now().Format(time.RFC3339))
 	if err != nil {
 		log.Fatal(err)
 	}
