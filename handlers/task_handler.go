@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"net/http"
 	"server/auth/tokens"
 	"server/models"
@@ -19,6 +20,9 @@ type TaskHandler interface {
 
 	// UpdateTask will update an existing task.
 	UpdateTask() http.HandlerFunc
+
+	// DeleteTask will delete an existing task.
+	DeleteTask() http.HandlerFunc
 }
 
 // DefaultTaskHandler is the default implementation of [TaskHandler]
@@ -102,6 +106,24 @@ func (h *DefaultTaskHandler) UpdateTask() http.HandlerFunc {
 			return
 		}
 
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func (h *DefaultTaskHandler) DeleteTask() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		parsedId, err := uuid.Parse(id)
+		if err != nil {
+			utils.HandleErrorResponse(w, utils.NewErrorResponse("Invalid id", http.StatusBadRequest))
+			return
+		}
+
+		errorResponse := h.taskService.DeleteTask(r.Context(), parsedId)
+		if errorResponse != nil {
+			utils.HandleErrorResponse(w, errorResponse)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 	}
 }

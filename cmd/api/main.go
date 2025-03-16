@@ -50,6 +50,12 @@ func (a *App) start() error {
 			a.handlers.TaskHandler.UpdateTask(),
 			tokens.AccessTokenType),
 	)
+	mux.Handle(
+		"DELETE /tasks/{id}",
+		a.authenticator.Middleware(
+			a.handlers.TaskHandler.DeleteTask(),
+			tokens.AccessTokenType),
+	)
 
 	server := http.Server{
 		Addr:    ":8080",

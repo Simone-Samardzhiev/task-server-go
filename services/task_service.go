@@ -21,6 +21,9 @@ type TaskService interface {
 
 	// UpdateTask will update an existing task.
 	UpdateTask(ctx context.Context, taskPayload *models.TaskPayload) *utils.ErrorResponse
+
+	// DeleteTask will delete an existing task.
+	DeleteTask(ctx context.Context, taskId uuid.UUID) *utils.ErrorResponse
 }
 
 // DefaultTaskService is default implementation of [TaskService]
@@ -85,6 +88,18 @@ func (s *DefaultTaskService) UpdateTask(ctx context.Context, taskPayload *models
 	}
 
 	result, err = s.taskRepository.UpdateTask(ctx, taskPayload)
+	if err != nil {
+		return utils.InternalServerError()
+	}
+	if !result {
+		return utils.NewErrorResponse("Task not found", http.StatusNotFound)
+	}
+
+	return nil
+}
+
+func (s *DefaultTaskService) DeleteTask(ctx context.Context, taskId uuid.UUID) *utils.ErrorResponse {
+	result, err := s.taskRepository.DeleteTask(ctx, taskId)
 	if err != nil {
 		return utils.InternalServerError()
 	}

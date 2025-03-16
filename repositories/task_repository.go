@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"github.com/google/uuid"
 	"server/models"
 )
 
@@ -19,6 +20,9 @@ type TaskRepository interface {
 
 	// UpdateTask will update an existing task. Returns true if the task was updated.
 	UpdateTask(ctx context.Context, task *models.TaskPayload) (bool, error)
+
+	// DeleteTask will delete an existing task. Return true  if the task was deleted.
+	DeleteTask(ctx context.Context, taskId uuid.UUID) (bool, error)
 }
 
 // PostgresTaskRepository is default implementation of [TaskRepository] using postgres database.
@@ -124,6 +128,25 @@ func (r *PostgresTaskRepository) UpdateTask(ctx context.Context, task *models.Ta
 		return false, err
 	}
 
+	return rows > 0, nil
+}
+
+func (r *PostgresTaskRepository) DeleteTask(ctx context.Context, taskId uuid.UUID) (bool, error) {
+	result, err := r.db.ExecContext(
+		ctx,
+		`DELETE FROM tasks 
+       WHERE id = $1`,
+		taskId,
+	)
+
+	if err != nil {
+		return false, err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
 	return rows > 0, nil
 }
 
