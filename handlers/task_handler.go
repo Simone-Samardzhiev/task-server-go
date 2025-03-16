@@ -31,8 +31,8 @@ func (h *DefaultTaskHandler) GetTasks() http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		tasks, errResponse := h.taskService.GetTasks(r.Context(), claims)
 		if errResponse != nil {
 			utils.HandleErrorResponse(w, errResponse)
