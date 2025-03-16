@@ -16,6 +16,9 @@ type TaskRepository interface {
 
 	// AddTask will add new task.
 	AddTask(ctx context.Context, taskPayload *models.TaskPayload, userId int) error
+
+	// UpdateTask will update an existing task. Returns true if the task was updated.
+	UpdateTask(ctx context.Context, task *models.TaskPayload) (bool, error)
 }
 
 // PostgresTaskRepository is default implementation of [TaskRepository] using postgres database.
@@ -94,6 +97,34 @@ func (r *PostgresTaskRepository) AddTask(ctx context.Context, task *models.TaskP
 	)
 
 	return err
+}
+
+func (r *PostgresTaskRepository) UpdateTask(ctx context.Context, task *models.TaskPayload) (bool, error) {
+	result, err := r.db.ExecContext(
+		ctx,
+		`UPDATE tasks
+		SET name        = $1,
+ 		description = $2,
+    	priority    = $3,
+    	date        = $4
+		WHERE id = $5`,
+		task.Name,
+		task.Description,
+		task.Priority,
+		&task.Date,
+		task.Id,
+	)
+
+	if err != nil {
+		return false, err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	return rows > 0, nil
 }
 
 func NewPostgresTaskRepository(db *sql.DB) *PostgresTaskRepository {

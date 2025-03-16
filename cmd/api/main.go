@@ -44,6 +44,12 @@ func (a *App) start() error {
 			a.handlers.TaskHandler.AddTask(),
 			tokens.AccessTokenType),
 	)
+	mux.Handle(
+		"PUT /tasks",
+		a.authenticator.Middleware(
+			a.handlers.TaskHandler.UpdateTask(),
+			tokens.AccessTokenType),
+	)
 
 	server := http.Server{
 		Addr:    ":8080",

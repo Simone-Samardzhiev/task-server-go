@@ -18,6 +18,9 @@ type TaskService interface {
 
 	// AddTask will add a new task and return the created one with an id.
 	AddTask(ctx context.Context, token tokens.Token, taskPayload *models.NewTaskPayload) (*models.TaskPayload, *utils.ErrorResponse)
+
+	// UpdateTask will update an existing task.
+	UpdateTask(ctx context.Context, taskPayload *models.TaskPayload) *utils.ErrorResponse
 }
 
 // DefaultTaskService is default implementation of [TaskService]
@@ -70,6 +73,26 @@ func (s *DefaultTaskService) AddTask(ctx context.Context, token tokens.Token, ta
 	}
 
 	return &task, nil
+}
+
+func (s *DefaultTaskService) UpdateTask(ctx context.Context, taskPayload *models.TaskPayload) *utils.ErrorResponse {
+	result, err := s.taskRepository.CheckPriority(ctx, taskPayload.Priority)
+	if err != nil {
+		return utils.InternalServerError()
+	}
+	if !result {
+		return utils.NewErrorResponse("Invalid priority", http.StatusBadRequest)
+	}
+
+	result, err = s.taskRepository.UpdateTask(ctx, taskPayload)
+	if err != nil {
+		return utils.InternalServerError()
+	}
+	if !result {
+		return utils.NewErrorResponse("Task not found", http.StatusNotFound)
+	}
+
+	return nil
 }
 
 func NewDefaultTaskService(taskRepository repositories.TaskRepository) *DefaultTaskService {

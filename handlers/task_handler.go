@@ -16,6 +16,9 @@ type TaskHandler interface {
 
 	// AddTask will add a new task.
 	AddTask() http.HandlerFunc
+
+	// UpdateTask will update an existing task.
+	UpdateTask() http.HandlerFunc
 }
 
 // DefaultTaskHandler is the default implementation of [TaskHandler]
@@ -78,6 +81,28 @@ func (h *DefaultTaskHandler) AddTask() http.HandlerFunc {
 		if err != nil {
 			utils.HandleErrorResponse(w, utils.InternalServerError())
 		}
+	}
+}
+
+func (h *DefaultTaskHandler) UpdateTask() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var taskPayload models.TaskPayload
+		err := json.NewDecoder(r.Body).Decode(&taskPayload)
+		if err != nil {
+			utils.HandleErrorResponse(w, utils.InvalidJson())
+		}
+
+		if utils.HandlePayload(w, &taskPayload) {
+			return
+		}
+
+		errorResponse := h.taskService.UpdateTask(r.Context(), &taskPayload)
+		if errorResponse != nil {
+			utils.HandleErrorResponse(w, errorResponse)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
