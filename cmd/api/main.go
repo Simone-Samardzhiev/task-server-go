@@ -10,6 +10,7 @@ import (
 	"server/handlers"
 	"server/repositories"
 	"server/services"
+	"server/utils"
 	"time"
 )
 
@@ -23,38 +24,47 @@ type App struct {
 // start will run the server.
 func (a *App) start() error {
 	mux := http.NewServeMux()
-	mux.Handle("POST /users/register", a.handlers.UserHandler.Register())
-	mux.Handle("POST /users/login", a.handlers.UserHandler.Login())
+	mux.Handle("POST /users/register", utils.Logger(a.handlers.UserHandler.Register()))
+	mux.Handle("POST /users/login", utils.Logger(a.handlers.UserHandler.Login()))
 	mux.Handle(
 		"GET /users/refresh",
-		a.authenticator.Middleware(
-			a.handlers.UserHandler.Refresh(),
-			tokens.RefreshTokenType,
+		utils.Logger(
+			a.authenticator.Middleware(
+				a.handlers.UserHandler.Refresh(),
+				tokens.RefreshTokenType,
+			),
 		),
 	)
 	mux.Handle(
 		"GET /tasks",
-		a.authenticator.Middleware(
-			a.handlers.TaskHandler.GetTasks(),
-			tokens.AccessTokenType),
+		utils.Logger(
+			a.authenticator.Middleware(
+				a.handlers.TaskHandler.GetTasks(),
+				tokens.AccessTokenType),
+		),
 	)
 	mux.Handle(
 		"POST /tasks",
-		a.authenticator.Middleware(
-			a.handlers.TaskHandler.AddTask(),
-			tokens.AccessTokenType),
+		utils.Logger(
+			a.authenticator.Middleware(
+				a.handlers.TaskHandler.AddTask(),
+				tokens.AccessTokenType),
+		),
 	)
 	mux.Handle(
 		"PUT /tasks",
-		a.authenticator.Middleware(
-			a.handlers.TaskHandler.UpdateTask(),
-			tokens.AccessTokenType),
+		utils.Logger(
+			a.authenticator.Middleware(
+				a.handlers.TaskHandler.UpdateTask(),
+				tokens.AccessTokenType),
+		),
 	)
 	mux.Handle(
 		"DELETE /tasks/{id}",
-		a.authenticator.Middleware(
-			a.handlers.TaskHandler.DeleteTask(),
-			tokens.AccessTokenType),
+		utils.Logger(
+			a.authenticator.Middleware(
+				a.handlers.TaskHandler.DeleteTask(),
+				tokens.AccessTokenType)),
 	)
 
 	server := http.Server{
