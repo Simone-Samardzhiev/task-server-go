@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"server/auth/tokens"
 	"server/config"
 	"server/database"
@@ -76,6 +77,7 @@ func (a *App) start() error {
 }
 
 func main() {
+	log.SetOutput(os.Stdout)
 	conf := config.NewConfig()
 	fmt.Println(time.Now().Format(time.RFC3339))
 	db, err := database.Connect(&conf.DatabaseConfig)
