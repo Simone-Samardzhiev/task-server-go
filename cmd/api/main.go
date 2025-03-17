@@ -66,11 +66,8 @@ func (a *App) start() error {
 }
 
 func main() {
-	conf, err := config.NewConfig()
+	conf := config.NewConfig()
 	fmt.Println(time.Now().Format(time.RFC3339))
-	if err != nil {
-		log.Fatal(err)
-	}
 	db, err := database.Connect(&conf.DatabaseConfig)
 	if err != nil {
 		log.Fatal(err)

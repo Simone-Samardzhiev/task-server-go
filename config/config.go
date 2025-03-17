@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/joho/godotenv"
+	"log"
 	"os"
 	"strconv"
 )
@@ -34,10 +35,10 @@ type AuthConfig struct {
 }
 
 // NewConfig function will load environment variables and return them as [Config] struct.
-func NewConfig() (*Config, error) {
+func NewConfig() *Config {
 	err := godotenv.Load()
 	if err != nil {
-		return nil, err
+		log.Println("Error loading .env file using defaults")
 	}
 
 	return &Config{
@@ -51,7 +52,7 @@ func NewConfig() (*Config, error) {
 			JwtSecret: []byte(getEnv("JWT_SECRET", "secret_for_jwt")),
 			JwtIssuer: getEnv("JWT_ISSUER", "com.localhost"),
 		},
-	}, nil
+	}
 }
 
 // getEnv will return environment variable with a key.
