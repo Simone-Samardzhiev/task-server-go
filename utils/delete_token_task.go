@@ -2,6 +2,7 @@ package utils
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 )
@@ -18,7 +19,8 @@ func StartDeleteTokenTask(db *sql.DB) {
 
 	for {
 		<-ticker.C
-		err := deleteTokens(db)
+		fmt.Printf("Deleting tokens...")
+		err = deleteTokens(db)
 		if err != nil {
 			log.Printf("Error deleting tokens: %v", err)
 		}
