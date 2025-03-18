@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"server/auth/tokens"
 	"server/config"
 	"server/database"
@@ -12,7 +10,6 @@ import (
 	"server/repositories"
 	"server/services"
 	"server/utils"
-	"time"
 )
 
 // App is the main entry of the application.
@@ -77,10 +74,9 @@ func (a *App) start() error {
 }
 
 func main() {
-	log.SetOutput(os.Stdout)
 	conf := config.NewConfig()
-	fmt.Println(time.Now().Format(time.RFC3339))
 	db, err := database.Connect(&conf.DatabaseConfig)
+	go utils.StartDeleteTokenTask(db)
 	if err != nil {
 		log.Fatal(err)
 	}
