@@ -23,7 +23,7 @@ Follow the steps to build and run the server locally.
 
 ### Prerequisites
 
-1. Go(1.20 or later)
+1. Go(1.23 or later)
 2. PostgresSQL
 3. Git
 
@@ -39,12 +39,12 @@ cd server-go
 2. **Add .env file**
 
 ```ini
-PORT= The port of the server.
-DB_USER= The database username.
-DB_PASS= The database password. 
-DB_HOST= The database host.
-DB_NAME= The datbase name.
-JWT_SECRET= JWT secret used to hash tokens.
+SERVER_ADDR=Server address
+DATABASE_URL=The database url for connection
+MAX_OPEN_CONNECTIONS=Max open db connections
+MAX_IDLE_CONNECTIONS=Max open idle connections.
+JWT_SECRET=Secret used to hash tokens.
+JWT_ISSUER=Issuer of the tokens.
 ```
 
 3. **Build and run**
@@ -62,16 +62,29 @@ The endpoint allows users to register.
 
 #### **Request Body**
 
-The body of the request should contain user credentials
+The body of the request should contain the user credentials
 
 ```json
 {
   "email": "exmaple@email.com",
-  "password": "password123"
+  "username": "Someone",
+  "password": "Password_123"
 }
 ```
 
-### 2. **POST /users/login**
+The user payload is validated before being accepted.
+If the email or the username is already in use the API will return an error.
+Also, there are more requirements for the user credentials:
+
+1. The email should be properly formated with valid local and domain part.
+2. The username should be less than 8 letters
+3. The password should be secure:
+    1. At least one capital letter
+    2. At least one small letter
+    3. At least one number.
+    4. At least one special character(! " # $ % & ' ( ) * + , - . : ; < = > ? [ \ ] ^ _ `{ | } ~)
+
+### 2. POST /users/login
 
 The endpoint allows user to receive JWT refresh and access token.
 
@@ -82,7 +95,8 @@ The body of the request should contain user credentials
 ```json
 {
   "email": "exmaple@email.com",
-  "password": "password123"
+  "username": "Someone",
+  "password": "Password_123"
 }
 ```
 
@@ -98,7 +112,7 @@ If not the response will be like:
 }
 ```
 
-### 3. **GET /users/refresh**
+### 3. GET /users
 
 The endpoint allows user to send refresh to token, for a new refresh and access token.
 
@@ -118,7 +132,7 @@ If not the response will be like:
 }
 ```
 
-### 4. **GET /tasks/all**
+### 4. GET /tasks
 
 The endpoint allows user to get all their tasks.
 
@@ -137,15 +151,13 @@ If not the response will be like:
     "id": "ffafdd8a-20ba-452f-b5b4-37d98b091ba0",
     "name": "Task name",
     "description": "Task description",
-    "type": 1,
-    "due_date": "2025-02-01T17:30:00+02:00",
-    "date_completed": "0001-01-01T01:33:16+01:33",
-    "date_deleted": "0001-01-01T01:33:16+01:33"
+    "priority": "Low",
+    "date": "2025-03-15T16:03:30Z"
   }
 ]
 ```
 
-### 5. **POST /tasks/add**
+### 5. POST /tasks
 
 The endpoint allows user to add a new task.
 
@@ -161,10 +173,14 @@ The body should contain the task information
 {
   "name": "Name",
   "description": "Description",
-  "type": 1,
-  "due_date": "2025-02-01T17:30:00+02:00"
+  "priority": "Low",
+  "data": "2025-03-15T16:03:30Z"
 }
 ```
+
+The task payload is also validated before storing it.
+None of the filed can be empty. Also, the priority will be checked by the database.
+You could easily adjust the priority by updating **Priorities** table
 
 #### **Response**
 
@@ -176,14 +192,12 @@ If not the response will be like:
   "id": "ffafdd8a-20ba-452f-b5b4-37d98b091ba0",
   "name": "Name",
   "description": "Description",
-  "type": 1,
-  "due_date": "2025-02-01T17:30:00+02:00",
-  "date_completed": null,
-  "date_deleted": null
+  "priority": "Vital",
+  "date": "2025-03-15T16:03:30Z"
 }
 ```
 
-### 6. **PUT /tasks/update**
+### 6. PUT /tasks
 
 The endpoint allows user to update an existing token.
 
@@ -200,12 +214,11 @@ The body should contain the token information
   "id": "ffafdd8a-20ba-452f-b5b4-37d98b091ba0",
   "name": "Task name",
   "description": "Task description",
-  "type": 1,
-  "due_date": "2025-02-01T17:30:00+02:00",
-  "date_completed": "0001-01-01T01:33:16+01:33",
-  "date_deleted": "0001-01-01T01:33:16+01:33"
+  "type": "High",
+  "date": "2025-03-15T16:03:30Z"
 }
 ```
+Note that updating task also validate the payload.
 
 #### **Response**
 
@@ -213,7 +226,7 @@ If the token is expired the server will return **Status Code Unauthorized**.
 If the task is found the server will return **Status Code OK**
 If the task is not found the server will return **Status Code Not Found**
 
-### 7. **DELETE /tasks/update**
+### 7. DELETE /tasks
 
 The endpoint allows user to delete a task.
 
