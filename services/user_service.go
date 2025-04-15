@@ -124,7 +124,7 @@ func (s *DefaultUseService) Refresh(ctx context.Context, token tokens.Token) (*m
 	return s.createTokenGroup(ctx, userId)
 }
 
-func NewDefaultService(userRepository repositories.UserRepository, tokenRepository repositories.TokenRepository, authenticator *tokens.JWTAuthenticator) *DefaultUseService {
+func NewDefaultUserService(userRepository repositories.UserRepository, tokenRepository repositories.TokenRepository, authenticator *tokens.JWTAuthenticator) *DefaultUseService {
 	return &DefaultUseService{
 		userRepository:   userRepository,
 		tokensRepository: tokenRepository,
