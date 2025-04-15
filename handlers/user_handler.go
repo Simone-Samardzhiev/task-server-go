@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"server/auth/tokens"
 	"server/models"
 	"server/services"
+	"server/utils"
 )
 
 // UserHandler interface handles user requests.
@@ -28,18 +30,48 @@ func (h *DefaultUserHandler) Register() fiber.Handler {
 			return err
 		}
 
+		if !utils.HandlePayload(c, &payload) {
+			return nil
+		}
+
+		err := h.userService.Register(c.Context(), payload)
+		if !utils.HandleErrorResponse(c, err) {
+			return nil
+		}
+
+		c.Status(fiber.StatusBadRequest)
+		return nil
 	}
 }
 
 func (h *DefaultUserHandler) Login() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		panic("implement me")
+		var payload models.LoginPayload
+		if err := c.BodyParser(&payload); err != nil {
+			return err
+		}
+
+		tokenGroup, err := h.userService.Login(c.Context(), payload)
+		if !utils.HandleErrorResponse(c, err) {
+			return nil
+		}
+
+		return c.JSON(tokenGroup)
 	}
 }
 
 func (h *DefaultUserHandler) Refresh() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		panic("implement me")
+		claims, ok := c.Locals(tokens.JWTClaimsKey).(*tokens.Token)
+		if !ok {
+			utils.HandleErrorResponse(c, utils.InternalServerErrorResponse())
+		}
+
+		tokenGroup, err := h.userService.Refresh(c.Context(), *claims)
+		if !utils.HandleErrorResponse(c, err) {
+			return nil
+		}
+		return c.JSON(tokenGroup)
 	}
 }
 

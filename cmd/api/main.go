@@ -12,21 +12,21 @@ import (
 )
 
 type server struct {
-	config   *config.Config
-	app      *fiber.App
-	handlers handlers.Handlers
+	config        *config.Config
+	handlers      handlers.Handlers
+	authenticator *tokens.JWTAuthenticator
 }
 
 func (s *server) start() error {
-	s.app = fiber.New()
-	api := s.app.Group("/api")
+	app := fiber.New()
+	api := app.Group("/api")
 	api1 := api.Group("/v1")
 
 	// User routes
 	userRouter := api1.Group("/users")
 	userRouter.Post("/register", s.handlers.UserHandler.Register())
 	userRouter.Post("/login", s.handlers.UserHandler.Login())
-	userRouter.Get("/refresh", s.handlers.UserHandler.Refresh())
+	userRouter.Get("/refresh", s.authenticator.Middleware(tokens.RefreshTokenType), s.handlers.UserHandler.Refresh())
 
 	// Task routes
 	taskRouter := api1.Group("/tasks")
@@ -35,7 +35,7 @@ func (s *server) start() error {
 	taskRouter.Post("/tasks/update", s.handlers.TaskHandler.UpdateTask())
 	taskRouter.Post("/tasks/delete", s.handlers.TaskHandler.DeleteTask())
 
-	return s.app.Listen(s.config.ServerAddr)
+	return app.Listen(s.config.ServerAddr)
 }
 
 func main() {
@@ -47,8 +47,8 @@ func main() {
 	}
 
 	s := &server{
-		config: conf,
-		app:    nil,
+		authenticator: authenticator,
+		config:        conf,
 		handlers: handlers.Handlers{
 			UserHandler: handlers.NewDefaultUserHandler(
 				services.NewDefaultUserService(
