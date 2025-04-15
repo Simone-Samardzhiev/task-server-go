@@ -3,10 +3,13 @@ package tokens
 import (
 	"errors"
 	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"server/config"
+	"server/utils"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -90,6 +93,24 @@ func (a *JWTAuthenticator) VerifyToken(tokenString string, tokenType TokenType) 
 	}
 
 	return claims, err
+}
+
+func (a *JWTAuthenticator) Middleware(tokenType TokenType) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		header := c.Get("Authorization")
+		header = strings.TrimPrefix(header, "Bearer ")
+		if len(header) == 0 {
+			return c.Status(fiber.StatusUnauthorized).JSON(utils.InvalidTokenErrorResponse())
+		}
+
+		claims, err := a.VerifyToken(header, tokenType)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(utils.InvalidTokenErrorResponse())
+		}
+
+		c.Locals(JWTClaimsKey, claims)
+		return c.Next()
+	}
 }
 
 func NewJWTAuthenticator(conf *config.AuthConfig) *JWTAuthenticator {
