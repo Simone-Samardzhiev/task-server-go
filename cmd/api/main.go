@@ -29,11 +29,11 @@ func (s *server) start() error {
 	userRouter.Get("/refresh", s.authenticator.Middleware(tokens.RefreshTokenType), s.handlers.UserHandler.Refresh())
 
 	// Task routes
-	taskRouter := api1.Group("/tasks")
-	taskRouter.Get("/tasks/get", s.handlers.TaskHandler.GetTasks())
-	taskRouter.Post("/tasks/add", s.handlers.TaskHandler.AddTask())
-	taskRouter.Post("/tasks/update", s.handlers.TaskHandler.UpdateTask())
-	taskRouter.Post("/tasks/delete", s.handlers.TaskHandler.DeleteTask())
+	taskRouter := api1.Group("/tasks", s.authenticator.Middleware(tokens.AccessTokenType))
+	taskRouter.Get("/get", s.handlers.TaskHandler.GetTasks())
+	taskRouter.Post("/add", s.handlers.TaskHandler.AddTask())
+	taskRouter.Put("/update", s.handlers.TaskHandler.UpdateTask())
+	taskRouter.Delete("/delete/:id", s.handlers.TaskHandler.DeleteTask())
 
 	return app.Listen(s.config.ServerAddr)
 }
