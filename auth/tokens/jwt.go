@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"net/http"
+	"server/config"
 	"server/utils"
 	"strconv"
 	"strings"
@@ -123,6 +124,6 @@ func (a *JWTAuthenticator) Middleware(next http.Handler, tokenType TokenType) ht
 	})
 }
 
-func NewJWTAuthenticator(secret []byte, issuer string) *JWTAuthenticator {
-	return &JWTAuthenticator{secret, issuer}
+func NewJWTAuthenticator(conf *config.AuthConfig) *JWTAuthenticator {
+	return &JWTAuthenticator{conf.JwtSecret, conf.JwtIssuer}
 }
