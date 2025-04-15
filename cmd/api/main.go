@@ -1,23 +1,71 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"log"
+	"server/auth/tokens"
 	"server/config"
 	"server/database"
+	"server/handlers"
+	"server/repositories"
+	"server/services"
 )
+
+type server struct {
+	config   *config.Config
+	app      *fiber.App
+	handlers handlers.Handlers
+}
+
+func (s *server) start() error {
+	s.app = fiber.New()
+	api := s.app.Group("/api")
+	api1 := api.Group("/v1")
+
+	// User routes
+	userRouter := api1.Group("/users")
+	userRouter.Post("/register", s.handlers.UserHandler.Register())
+	userRouter.Post("/login", s.handlers.UserHandler.Login())
+	userRouter.Get("/refresh", s.handlers.UserHandler.Refresh())
+
+	// Task routes
+	taskRouter := api1.Group("/tasks")
+	taskRouter.Get("/tasks/get", s.handlers.TaskHandler.GetTasks())
+	taskRouter.Post("/tasks/add", s.handlers.TaskHandler.AddTask())
+	taskRouter.Post("/tasks/update", s.handlers.TaskHandler.UpdateTask())
+	taskRouter.Post("/tasks/delete", s.handlers.TaskHandler.DeleteTask())
+
+	return s.app.Listen(s.config.ServerAddr)
+}
 
 func main() {
 	conf := config.NewConfig()
-	_, err := database.Connect(&conf.DatabaseConfig)
+	authenticator := tokens.NewJWTAuthenticator(&conf.AuthConfig)
+	db, err := database.Connect(&conf.DatabaseConfig)
 	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err)
-		return
+		log.Fatalf("Error creating database connection: %v", err)
 	}
 
-	app := fiber.New()
-	err = app.Listen(conf.ServerAddr)
-	if err != nil {
-		log.Fatalf("Error starting server: %v", err)
+	s := &server{
+		config: conf,
+		app:    nil,
+		handlers: handlers.Handlers{
+			UserHandler: handlers.NewDefaultUserHandler(
+				services.NewDefaultUserService(
+					repositories.NewPostgresUserRepository(db),
+					repositories.NewPostgresTokenRepository(db),
+					authenticator,
+				),
+			),
+			TaskHandler: handlers.NewDefaultTaskHandler(
+				services.NewDefaultTaskService(
+					repositories.NewPostgresTaskRepository(db),
+				),
+			),
+		},
+	}
+
+	if err = s.start(); err != nil {
+		log.Fatal("Error starting server", err)
 	}
 }
