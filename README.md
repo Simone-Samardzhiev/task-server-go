@@ -56,7 +56,7 @@ go build
 
 ## API
 
-### 1. **POST /users/register**
+### 1. **POST api/v1/users/register**
 
 The endpoint allows users to register.
 
@@ -84,7 +84,7 @@ Also, there are more requirements for the user credentials:
     3. At least one number.
     4. At least one special character(! " # $ % & ' ( ) * + , - . : ; < = > ? [ \ ] ^ _ `{ | } ~)
 
-### 2. POST /users/login
+### 2. POST api/v1/users/login
 
 The endpoint allows user to receive JWT refresh and access token.
 
@@ -112,7 +112,7 @@ If not the response will be like:
 }
 ```
 
-### 3. GET /users
+### 3. GET api/v1/users/refresh
 
 The endpoint allows user to send refresh to token, for a new refresh and access token.
 
@@ -132,7 +132,7 @@ If not the response will be like:
 }
 ```
 
-### 4. GET /tasks
+### 4. GET api/v1/tasks/get
 
 The endpoint allows user to get all their tasks.
 
@@ -157,7 +157,7 @@ If not the response will be like:
 ]
 ```
 
-### 5. POST /tasks
+### 5. POST api/v1/tasks/add
 
 The endpoint allows user to add a new task.
 
@@ -197,7 +197,7 @@ If not the response will be like:
 }
 ```
 
-### 6. PUT /tasks
+### 6. PUT api/v1/tasks/update
 
 The endpoint allows user to update an existing token.
 
@@ -226,7 +226,7 @@ If the token is expired the server will return **Status Code Unauthorized**.
 If the task is found the server will return **Status Code OK**
 If the task is not found the server will return **Status Code Not Found**
 
-### 7. DELETE /tasks
+### 7. DELETE api/v1/tasks/delete/{id}
 
 The endpoint allows user to delete a task.
 
