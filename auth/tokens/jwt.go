@@ -1,16 +1,12 @@
 package tokens
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"net/http"
 	"server/config"
-	"server/utils"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -94,34 +90,6 @@ func (a *JWTAuthenticator) VerifyToken(tokenString string, tokenType TokenType) 
 	}
 
 	return claims, err
-}
-
-// Middleware method return a middleware for jwt token.
-// The middleware will extract the token and pass it by the context.
-// If the token is not valid the middleware will drop the request.
-func (a *JWTAuthenticator) Middleware(next http.Handler, tokenType TokenType) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
-		if token == "" {
-			utils.HandleErrorResponse(w, utils.NewErrorResponse("Missing bearer token", http.StatusUnauthorized))
-			return
-		}
-
-		token = strings.TrimPrefix(token, "Bearer ")
-
-		claims, err := a.VerifyToken(token, tokenType)
-		if err != nil {
-			utils.HandleErrorResponse(w, utils.NewErrorResponse("Invalid token", http.StatusUnauthorized))
-			return
-		}
-
-		if claims.TokenType != tokenType {
-			utils.HandleErrorResponse(w, utils.NewErrorResponse("Invalid token type", http.StatusUnauthorized))
-			return
-		}
-
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), JWTClaimsKey, *claims)))
-	})
 }
 
 func NewJWTAuthenticator(conf *config.AuthConfig) *JWTAuthenticator {
