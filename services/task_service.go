@@ -34,12 +34,12 @@ type DefaultTaskService struct {
 func (s *DefaultTaskService) GetTasks(ctx context.Context, token tokens.Token) ([]models.TaskPayload, *utils.ErrorResponse) {
 	userId, err := strconv.Atoi(token.Subject)
 	if err != nil {
-		return nil, utils.InvalidToken()
+		return nil, utils.InvalidTokenErrorResponse()
 	}
 
 	tasks, err := s.taskRepository.GetTasks(ctx, userId)
 	if err != nil {
-		return nil, utils.InternalServerError()
+		return nil, utils.InternalServerErrorResponse()
 	}
 
 	return tasks, nil
@@ -48,7 +48,7 @@ func (s *DefaultTaskService) GetTasks(ctx context.Context, token tokens.Token) (
 func (s *DefaultTaskService) AddTask(ctx context.Context, token tokens.Token, taskPayload *models.NewTaskPayload) (*models.TaskPayload, *utils.ErrorResponse) {
 	result, err := s.taskRepository.CheckPriority(ctx, taskPayload.Priority)
 	if err != nil {
-		return nil, utils.InternalServerError()
+		return nil, utils.InternalServerErrorResponse()
 	}
 
 	if !result {
@@ -67,12 +67,12 @@ func (s *DefaultTaskService) AddTask(ctx context.Context, token tokens.Token, ta
 
 	userId, err := strconv.Atoi(token.Subject)
 	if err != nil {
-		return nil, utils.InvalidToken()
+		return nil, utils.InvalidTokenErrorResponse()
 	}
 
 	err = s.taskRepository.AddTask(ctx, &task, userId)
 	if err != nil {
-		return nil, utils.InternalServerError()
+		return nil, utils.InternalServerErrorResponse()
 	}
 
 	return &task, nil
@@ -81,7 +81,7 @@ func (s *DefaultTaskService) AddTask(ctx context.Context, token tokens.Token, ta
 func (s *DefaultTaskService) UpdateTask(ctx context.Context, taskPayload *models.TaskPayload) *utils.ErrorResponse {
 	result, err := s.taskRepository.CheckPriority(ctx, taskPayload.Priority)
 	if err != nil {
-		return utils.InternalServerError()
+		return utils.InternalServerErrorResponse()
 	}
 	if !result {
 		return utils.NewErrorResponse("Invalid priority", http.StatusBadRequest)
@@ -89,7 +89,7 @@ func (s *DefaultTaskService) UpdateTask(ctx context.Context, taskPayload *models
 
 	result, err = s.taskRepository.UpdateTask(ctx, taskPayload)
 	if err != nil {
-		return utils.InternalServerError()
+		return utils.InternalServerErrorResponse()
 	}
 	if !result {
 		return utils.NewErrorResponse("Task not found", http.StatusNotFound)
@@ -101,7 +101,7 @@ func (s *DefaultTaskService) UpdateTask(ctx context.Context, taskPayload *models
 func (s *DefaultTaskService) DeleteTask(ctx context.Context, taskId uuid.UUID) *utils.ErrorResponse {
 	result, err := s.taskRepository.DeleteTask(ctx, taskId)
 	if err != nil {
-		return utils.InternalServerError()
+		return utils.InternalServerErrorResponse()
 	}
 	if !result {
 		return utils.NewErrorResponse("Task not found", http.StatusNotFound)

@@ -37,7 +37,7 @@ type DefaultUseService struct {
 func (s *DefaultUseService) Register(ctx context.Context, payload models.RegistrationsPayload) *utils.ErrorResponse {
 	result, err := s.userRepository.CheckIfEmailExists(ctx, payload.Email)
 	if err != nil {
-		return utils.InternalServerError()
+		return utils.InternalServerErrorResponse()
 	}
 
 	if result {
@@ -46,7 +46,7 @@ func (s *DefaultUseService) Register(ctx context.Context, payload models.Registr
 
 	result, err = s.userRepository.CheckIfUsernameExists(ctx, payload.Username)
 	if err != nil {
-		return utils.InternalServerError()
+		return utils.InternalServerErrorResponse()
 	}
 	if result {
 		return utils.NewErrorResponse("Username already in use", http.StatusConflict)
@@ -54,12 +54,12 @@ func (s *DefaultUseService) Register(ctx context.Context, payload models.Registr
 
 	hash, err := passwords.HashPassword(payload.Password)
 	if err != nil {
-		return utils.InternalServerError()
+		return utils.InternalServerErrorResponse()
 	}
 
 	err = s.userRepository.AddUser(ctx, payload.Email, payload.Username, hash)
 	if err != nil {
-		return utils.InternalServerError()
+		return utils.InternalServerErrorResponse()
 	}
 
 	return nil
@@ -71,17 +71,17 @@ func (s *DefaultUseService) createTokenGroup(ctx context.Context, userId int) (*
 	tokenExp := time.Now().Add(time.Hour * 24 * 7)
 	refreshToken, err := s.authenticator.CreateRefreshToken(tokenId, tokenExp)
 	if err != nil {
-		return nil, utils.InternalServerError()
+		return nil, utils.InternalServerErrorResponse()
 	}
 
 	err = s.tokensRepository.AddToken(ctx, tokenId, tokenExp, userId)
 	if err != nil {
-		return nil, utils.InternalServerError()
+		return nil, utils.InternalServerErrorResponse()
 	}
 
 	accessToken, err := s.authenticator.CreateAccessToken(userId, time.Now().Add(time.Minute*10))
 	if err != nil {
-		return nil, utils.InternalServerError()
+		return nil, utils.InternalServerErrorResponse()
 	}
 
 	return models.NewTokenGroup(accessToken, refreshToken), nil
@@ -92,7 +92,7 @@ func (s *DefaultUseService) Login(ctx context.Context, payload models.LoginPaylo
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, utils.NewErrorResponse("Invalid credentials", http.StatusUnauthorized)
 	} else if err != nil {
-		return nil, utils.InternalServerError()
+		return nil, utils.InternalServerErrorResponse()
 	}
 
 	passwordsMatch := passwords.VerifyPassword(payload.Password, user.Password)
@@ -106,19 +106,19 @@ func (s *DefaultUseService) Login(ctx context.Context, payload models.LoginPaylo
 func (s *DefaultUseService) Refresh(ctx context.Context, token tokens.Token) (*models.TokenGroup, *utils.ErrorResponse) {
 	tokenId, err := uuid.Parse(token.ID)
 	if err != nil {
-		return nil, utils.InvalidToken()
+		return nil, utils.InvalidTokenErrorResponse()
 	}
 
 	userId, err := s.tokensRepository.CheckToken(ctx, tokenId)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, utils.InvalidToken()
+		return nil, utils.InvalidTokenErrorResponse()
 	} else if err != nil {
-		return nil, utils.InternalServerError()
+		return nil, utils.InternalServerErrorResponse()
 	}
 
 	err = s.tokensRepository.DeleteToken(ctx, tokenId)
 	if err != nil {
-		return nil, utils.InternalServerError()
+		return nil, utils.InternalServerErrorResponse()
 	}
 
 	return s.createTokenGroup(ctx, userId)

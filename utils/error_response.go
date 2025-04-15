@@ -28,3 +28,13 @@ func HandleErrorResponse(c *fiber.Ctx, error *ErrorResponse) bool {
 	}
 	return false
 }
+
+// InternalServerErrorResponse is the standard error return when there is a server error.
+func InternalServerErrorResponse() *ErrorResponse {
+	return NewErrorResponse("Internal Server Error", 500)
+}
+
+// InvalidTokenErrorResponse is the standard error returned when the token is invalid.
+func InvalidTokenErrorResponse() *ErrorResponse {
+	return NewErrorResponse("Invalid Token", 401)
+}
