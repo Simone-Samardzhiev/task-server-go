@@ -9,17 +9,9 @@ type ValidatablePayload interface {
 	ValidatePayload() *ErrorResponse
 }
 
-// HandlePayload used to check the payload. If the payload is valid the result is true
-// otherwise the function responds with [ErrorResponse] and return false.
+// HandlePayload used to check the payload. The function
+// calls [HandleErrorResponse] with the error from validation and return the result.
 func HandlePayload(c *fiber.Ctx, payload ValidatablePayload) bool {
 	errorResponse := payload.ValidatePayload()
-	if errorResponse == nil {
-		return true
-	}
-
-	err := c.JSON(errorResponse)
-	if err != nil {
-		c.Status(fiber.StatusInternalServerError)
-	}
-	return false
+	return HandleErrorResponse(c, errorResponse)
 }
