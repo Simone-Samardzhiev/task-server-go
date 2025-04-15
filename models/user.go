@@ -120,7 +120,7 @@ func (u *RegistrationsPayload) ValidatePassword() *utils.ErrorResponse {
 	}
 
 	if !strings.ContainsAny(u.Password, "-_@*&#!") {
-		return utils.NewErrorResponse("Password must contain at least 8 characters", http.StatusBadRequest)
+		return utils.NewErrorResponse("Password must contain at least one special character", http.StatusBadRequest)
 	}
 
 	return nil
